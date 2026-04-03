@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFusion – Auth</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auth.css">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="auth-page">
+
+<!-- SPLIT LAYOUT -->
+<div class="auth-layout">
+
+  <!-- LEFT PANEL -->
+  <div class="auth-panel">
+    <a href="index.html" class="panel-logo">🔥 FitFusion</a>
+
+    <div class="panel-content">
+      <div class="panel-badge">AI-Powered Fashion</div>
+      <h1>Dress smarter,<br>not harder.</h1>
+      <p>Get personalized outfit recommendations powered by AI. Your style, elevated.</p>
+
+      <div class="panel-stats">
+        <div class="stat"><span class="stat-num">50K+</span><span>Users</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">1M+</span><span>Outfits</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">98%</span><span>Satisfaction</span></div>
+      </div>
+    </div>
+
+    <!-- Floating orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Floating cards -->
+    <div class="float-card card-a">
+      <span class="fc-icon">✨</span>
+      <div><strong>Style Score</strong><br><span>92% Match</span></div>
+    </div>
+    <div class="float-card card-b">
+      <span class="fc-icon">👗</span>
+      <div><strong>Today's Pick</strong><br><span>Urban Minimal</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="auth-right">
+
+    <!-- MOBILE LOGO -->
+    <a href="index.html" class="mobile-logo">🔥 FitFusion</a>
+
+    <div class="auth-card">
+
+      <!-- TABS -->
+      <div class="auth-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="login" role="tab" aria-selected="true">Sign In</button>
+        <button class="tab-btn" data-tab="signup" role="tab" aria-selected="false">Sign Up</button>
+        <div class="tab-slider"></div>
+      </div>
+
+      <!-- FORMS CONTAINER -->
+      <div class="forms-container">
+
+        <!-- LOGIN -->
+        <form id="login" class="auth-form active" novalidate>
+          <div class="form-header">
+            <h2>Welcome back 👋</h2>
+            <p>Sign in to continue your style journey</p>
+          </div>
+
+          <!-- SOCIAL -->
+          <div class="social-row single">
+            <button type="button" class="social-btn google-btn" id="google-login-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continue with Google
+            </button>
+          </div>
+
+          <div class="divider"><span>or continue with email</span></div>
+
+          <div class="field">
+            <input type="email" id="login-email" placeholder=" " required>
+            <label for="login-email">Email address</label>
+            <span class="field-icon">✉️</span>
+          </div>
+
+          <div class="field">
+            <input type="password" id="login-password" placeholder=" " required>
+            <label for="login-password">Password</label>
+            <button type="button" class="toggle-pw" aria-label="Toggle password">
+              <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+
+          <div class="form-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="remember">
+              <span class="custom-check"></span>
+              Remember me
+            </label>
+            <a href="#" class="link forgot-link">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="submit-btn">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-loader" hidden>
+              <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </span>
+          </button>
+
+          <p class="switch-text">Don't have an account? <a href="#" class="link" data-switch="signup">Sign Up</a></p>
+        </form>
+
+        <!-- SIGNUP -->
+        <form id="signup" class="auth-form" novalidate>
+          <div class="form-header">
+            <h2>Join FitFusion ✨</h2>
+            <p>Create your free account and start styling</p>
+          </div>
+
+          <div class="social-row single">
+            <button type="button" class="social-btn google-btn" id="google-signup-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continue with Google
+            </button>
+          </div>
+
+          <div class="divider"><span>or continue with email</span></div>
+
+          <div class="name-row">
+            <div class="field">
+              <input type="text" id="signup-fname" placeholder=" " required>
+              <label for="signup-fname">First name</label>
+            </div>
+            <div class="field">
+              <input type="text" id="signup-lname" placeholder=" " required>
+              <label for="signup-lname">Last name</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <input type="email" id="signup-email" placeholder=" " required>
+            <label for="signup-email">Email address</label>
+            <span class="field-icon">✉️</span>
+          </div>
+
+          <div class="field">
+            <input type="password" id="signup-password" placeholder=" " required minlength="8">
+            <label for="signup-password">Password</label>
+            <button type="button" class="toggle-pw" aria-label="Toggle password">
+              <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+
+          <!-- PASSWORD STRENGTH -->
+          <div class="strength-wrap" id="strength-wrap">
+            <div class="strength-bar">
+              <div class="strength-fill" id="strength-fill"></div>
+            </div>
+            <span class="strength-label" id="strength-label">Strength</span>
+          </div>
+
+          <div class="field">
+            <input type="password" id="signup-confirm" placeholder=" " required>
+            <label for="signup-confirm">Confirm password</label>
+            <button type="button" class="toggle-pw" aria-label="Toggle password">
+              <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="terms" required>
+            <span class="custom-check"></span>
+            I agree to the <a href="#" class="link">Terms of Service</a> &amp; <a href="#" class="link">Privacy Policy</a>
+          </label>
+
+          <button type="submit" class="submit-btn">
+            <span class="btn-text">Create Account</span>
+            <span class="btn-loader" hidden>
+              <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </span>
+          </button>
+
+          <p class="switch-text">Already have an account? <a href="#" class="link" data-switch="login">Sign In</a></p>
+        </form>
+
+      </div><!-- /forms-container -->
+    </div><!-- /auth-card -->
+  </div><!-- /auth-right -->
+</div><!-- /auth-layout -->
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+<script src="auth.js"></script>
+</body>
+</html>

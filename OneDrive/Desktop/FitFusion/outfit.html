@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFusion – Style Preferences</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="outfit.css">
+</head>
+<body class="outfit-page">
+
+<div class="outfit-bg">
+  <div class="bg-orb o1"></div>
+  <div class="bg-orb o2"></div>
+  <div class="bg-orb o3"></div>
+</div>
+
+<!-- HEADER -->
+<header class="outfit-header">
+  <a href="index.html" class="outfit-logo">🔥 FitFusion</a>
+  <a href="index.html" class="skip-link">Skip for now →</a>
+</header>
+
+<!-- MAIN -->
+<main class="outfit-main">
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-wrap">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <span class="progress-label" id="progress-label">Step 1 of 5</span>
+  </div>
+
+  <!-- GREETING -->
+  <div class="outfit-greeting">
+    <h1 id="greeting-text">Let's build your style profile ✨</h1>
+    <p id="greeting-sub">Answer a few quick questions so our AI can craft perfect outfits for you.</p>
+  </div>
+
+  <!-- STEPS CONTAINER -->
+  <div class="steps-container" id="steps-container">
+
+    <!-- STEP 1 — GENDER -->
+    <div class="step active" data-step="1">
+      <h2 class="step-title">How do you identify your style?</h2>
+      <div class="option-grid cols-3">
+        <label class="option-card">
+          <input type="radio" name="gender" value="women">
+          <div class="oc-inner">
+            <span class="oc-icon">👩</span>
+            <span class="oc-label">Women</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="gender" value="men">
+          <div class="oc-inner">
+            <span class="oc-icon">👨</span>
+            <span class="oc-label">Men</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="gender" value="unisex">
+          <div class="oc-inner">
+            <span class="oc-icon">🧑</span>
+            <span class="oc-label">Unisex</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 2 — OCCASION -->
+    <div class="step" data-step="2">
+      <h2 class="step-title">What's the occasion?</h2>
+      <div class="option-grid cols-2">
+        <label class="option-card">
+          <input type="radio" name="occasion" value="casual">
+          <div class="oc-inner">
+            <span class="oc-icon">☕</span>
+            <span class="oc-label">Casual Day Out</span>
+            <span class="oc-sub">Relaxed & comfortable</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="occasion" value="work">
+          <div class="oc-inner">
+            <span class="oc-icon">💼</span>
+            <span class="oc-label">Work / Office</span>
+            <span class="oc-sub">Professional & sharp</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="occasion" value="party">
+          <div class="oc-inner">
+            <span class="oc-icon">🎉</span>
+            <span class="oc-label">Party / Night Out</span>
+            <span class="oc-sub">Bold & expressive</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="occasion" value="date">
+          <div class="oc-inner">
+            <span class="oc-icon">�</span>
+            <span class="oc-label">Date Night</span>
+            <span class="oc-sub">Elegant & charming</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="occasion" value="sport">
+          <div class="oc-inner">
+            <span class="oc-icon">🏃</span>
+            <span class="oc-label">Sport / Active</span>
+            <span class="oc-sub">Functional & sporty</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="occasion" value="formal">
+          <div class="oc-inner">
+            <span class="oc-icon">🎩</span>
+            <span class="oc-label">Formal Event</span>
+            <span class="oc-sub">Sophisticated & classic</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 3 — STYLE VIBE -->
+    <div class="step" data-step="3">
+      <h2 class="step-title">Pick your style vibe</h2>
+      <p class="step-sub">Choose up to 3</p>
+      <div class="option-grid cols-3">
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="minimal">
+          <div class="oc-inner"><span class="oc-icon">🤍</span><span class="oc-label">Minimal</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="streetwear">
+          <div class="oc-inner"><span class="oc-icon">🧢</span><span class="oc-label">Streetwear</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="boho">
+          <div class="oc-inner"><span class="oc-icon">🌸</span><span class="oc-label">Boho</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="classic">
+          <div class="oc-inner"><span class="oc-icon">👔</span><span class="oc-label">Classic</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="edgy">
+          <div class="oc-inner"><span class="oc-icon">🖤</span><span class="oc-label">Edgy</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="preppy">
+          <div class="oc-inner"><span class="oc-icon">🎀</span><span class="oc-label">Preppy</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="vintage">
+          <div class="oc-inner"><span class="oc-icon">📻</span><span class="oc-label">Vintage</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="luxe">
+          <div class="oc-inner"><span class="oc-icon">💎</span><span class="oc-label">Luxe</span></div>
+        </label>
+        <label class="option-card multi">
+          <input type="checkbox" name="style" value="sporty">
+          <div class="oc-inner"><span class="oc-icon">⚡</span><span class="oc-label">Sporty</span></div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 4 — COLORS -->
+    <div class="step" data-step="4">
+      <h2 class="step-title">Favourite colour palette?</h2>
+      <p class="step-sub">Pick all that apply</p>
+      <div class="color-grid">
+        <label class="color-card" title="Neutrals">
+          <input type="checkbox" name="colors" value="neutrals">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#f5f5f0,#c8c8c0)"></div>
+            <span>Neutrals</span>
+          </div>
+        </label>
+        <label class="color-card" title="Earth Tones">
+          <input type="checkbox" name="colors" value="earth">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#c8a882,#8b6347)"></div>
+            <span>Earth</span>
+          </div>
+        </label>
+        <label class="color-card" title="Pastels">
+          <input type="checkbox" name="colors" value="pastels">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#ffd6e7,#c3e8ff)"></div>
+            <span>Pastels</span>
+          </div>
+        </label>
+        <label class="color-card" title="Bold & Bright">
+          <input type="checkbox" name="colors" value="bold">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#ff4d4d,#ffb700)"></div>
+            <span>Bold</span>
+          </div>
+        </label>
+        <label class="color-card" title="Monochrome">
+          <input type="checkbox" name="colors" value="mono">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#111,#888)"></div>
+            <span>Mono</span>
+          </div>
+        </label>
+        <label class="color-card" title="Jewel Tones">
+          <input type="checkbox" name="colors" value="jewel">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#7c3aed,#0ea5e9)"></div>
+            <span>Jewel</span>
+          </div>
+        </label>
+        <label class="color-card" title="Neons">
+          <input type="checkbox" name="colors" value="neon">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#39ff14,#ff00ff)"></div>
+            <span>Neons</span>
+          </div>
+        </label>
+        <label class="color-card" title="Warm Tones">
+          <input type="checkbox" name="colors" value="warm">
+          <div class="cc-inner">
+            <div class="cc-swatch" style="background: linear-gradient(135deg,#f97316,#ec4899)"></div>
+            <span>Warm</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 5 — BUDGET -->
+    <div class="step" data-step="5">
+      <h2 class="step-title">What's your budget range?</h2>
+      <div class="option-grid cols-2">
+        <label class="option-card">
+          <input type="radio" name="budget" value="budget">
+          <div class="oc-inner">
+            <span class="oc-icon">💰</span>
+            <span class="oc-label">Budget</span>
+            <span class="oc-sub">Under $50</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="budget" value="mid">
+          <div class="oc-inner">
+            <span class="oc-icon">💳</span>
+            <span class="oc-label">Mid-range</span>
+            <span class="oc-sub">$50 – $200</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="budget" value="premium">
+          <div class="oc-inner">
+            <span class="oc-icon">✨</span>
+            <span class="oc-label">Premium</span>
+            <span class="oc-sub">$200 – $500</span>
+          </div>
+        </label>
+        <label class="option-card">
+          <input type="radio" name="budget" value="luxury">
+          <div class="oc-inner">
+            <span class="oc-icon">💎</span>
+            <span class="oc-label">Luxury</span>
+            <span class="oc-sub">$500+</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- EXTRAS -->
+      <div class="extras-wrap">
+        <label class="extras-label">Anything else? (optional)</label>
+        <textarea id="extras" placeholder="e.g. I prefer loose fits, no synthetic fabrics, love layering…" rows="3"></textarea>
+      </div>
+    </div>
+
+  </div><!-- /steps-container -->
+
+  <!-- NAV BUTTONS -->
+  <div class="step-nav">
+    <button class="nav-btn back-btn" id="back-btn" disabled>← Back</button>
+    <button class="nav-btn next-btn" id="next-btn">Next →</button>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="outfit.js"></script>
+</body>
+</html>

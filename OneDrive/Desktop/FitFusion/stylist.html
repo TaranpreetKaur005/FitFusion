@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFusion – AI Stylist</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="stylist.css">
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="overlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-logo">🔥 FitFusion</span>
+    <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">✕</button>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="index.html" class="sidebar-link"><span class="sl-icon">🏠</span> Home</a>
+    <a href="stylist.html" class="sidebar-link active"><span class="sl-icon">✨</span> AI Stylist</a>
+    <a href="#" class="sidebar-link"><span class="sl-icon">👗</span> My Wardrobe</a>
+    <a href="#" class="sidebar-link"><span class="sl-icon">🔥</span> Trending</a>
+    <a href="#" class="sidebar-link"><span class="sl-icon">📊</span> Style Analysis</a>
+    <a href="#" class="sidebar-link"><span class="sl-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-promo">
+      <p>Upgrade to <strong>Pro</strong> for unlimited AI outfits</p>
+      <button class="btn-primary sidebar-upgrade">Upgrade ✨</button>
+    </div>
+    <div class="sidebar-auth" id="sidebar-auth">
+      <a href="auth.html" class="sidebar-link"><span class="sl-icon">🔑</span> Sign In</a>
+      <a href="auth.html?tab=signup" class="sidebar-link"><span class="sl-icon">🚀</span> Sign Up</a>
+    </div>
+    <div class="sidebar-user-card" id="sidebar-user-card" style="display:none">
+      <div class="suc-avatar" id="suc-avatar"></div>
+      <div class="suc-info">
+        <div class="suc-name" id="suc-name"></div>
+        <div class="suc-email" id="suc-email"></div>
+      </div>
+      <button class="suc-logout" id="suc-logout">Sign Out</button>
+    </div>
+  </div>
+</aside>
+
+<!-- NAVBAR (same as index.html) -->
+<header class="navbar" id="navbar">
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="logo" style="text-decoration:none">🔥 FitFusion</a>
+  </div>
+  <nav class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="stylist.html" class="nav-link nav-link-active">AI Stylist</a>
+    <a href="#" class="nav-link">Wardrobe</a>
+    <a href="trending.html" class="nav-link">Trendy Suggestions</a>
+  </nav>
+  <div class="nav-right">
+    <div id="nav-auth">
+      <a href="auth.html"><button class="btn-outline">Sign In</button></a>
+      <a href="auth.html?tab=signup"><button class="btn-primary">Sign Up</button></a>
+    </div>
+    <div id="nav-user" class="nav-user hidden">
+      <div class="nav-avatar" id="nav-avatar"></div>
+      <div class="nav-user-info">
+        <span class="nav-user-name" id="nav-user-name"></span>
+        <span class="nav-user-email" id="nav-user-email"></span>
+      </div>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="dropdown-header">
+          <div class="drop-avatar" id="drop-avatar"></div>
+          <div>
+            <div class="drop-name" id="drop-name"></div>
+            <div class="drop-email" id="drop-email"></div>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a href="#" class="dropdown-item">👗 My Wardrobe</a>
+        <a href="#" class="dropdown-item">✨ Style Preferences</a>
+        <a href="#" class="dropdown-item">⚙️ Settings</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item logout-btn" id="logout-btn">🚪 Sign Out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ QUESTIONNAIRE VIEW ══ -->
+<div class="st-wrap" id="view-quiz">
+  <div class="st-bg">
+    <div class="st-orb o1"></div>
+    <div class="st-orb o2"></div>
+    <div class="st-orb o3"></div>
+  </div>
+
+  <div class="st-card">
+    <!-- header -->
+    <div class="st-head">
+      <div>
+        <span class="st-badge">✨ AI Stylist</span>
+        <h1 class="st-title" id="q-greeting">Build your style profile</h1>
+        <p class="st-subtitle">Answer 6 quick questions and we'll curate the perfect outfit for you.</p>
+      </div>
+      <div class="st-prog-wrap">
+        <div class="st-prog-bar"><div class="st-prog-fill" id="q-fill"></div></div>
+        <span class="st-prog-label" id="q-label">Step 1 of 6</span>
+      </div>
+    </div>
+
+    <!-- steps -->
+    <div id="st-steps">
+
+      <div class="st-step active" data-q="1">
+        <div class="st-icon">🧑‍🎨</div>
+        <h2 class="st-q">How do you identify your style?</h2>
+        <p class="st-hint">This helps us tailor recommendations for you</p>
+        <div class="st-opts cols-3">
+          <label class="st-opt"><input type="radio" name="q-gender" value="women"><div class="sto"><span>👩</span><span>Women</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-gender" value="men"><div class="sto"><span>👨</span><span>Men</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-gender" value="unisex"><div class="sto"><span>🧑</span><span>Unisex</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="2">
+        <div class="st-icon">👗</div>
+        <h2 class="st-q">What fit do you prefer?</h2>
+        <p class="st-hint">Choose what feels most comfortable</p>
+        <div class="st-opts cols-2">
+          <label class="st-opt"><input type="radio" name="q-fit" value="oversized"><div class="sto"><span>🌊</span><span>Oversized &amp; Relaxed</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-fit" value="fitted"><div class="sto"><span>✂️</span><span>Fitted &amp; Tailored</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-fit" value="balanced"><div class="sto"><span>⚖️</span><span>Balanced Mix</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-fit" value="flowy"><div class="sto"><span>🌸</span><span>Flowy &amp; Draped</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="3">
+        <div class="st-icon">✨</div>
+        <h2 class="st-q">Pick your style vibes</h2>
+        <p class="st-hint">Choose up to 3 that resonate with you</p>
+        <div class="st-opts cols-3">
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="minimal"><div class="sto"><span>🤍</span><span>Minimal</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="streetwear"><div class="sto"><span>🧢</span><span>Streetwear</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="classic"><div class="sto"><span>👔</span><span>Classic</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="boho"><div class="sto"><span>🌿</span><span>Boho</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="edgy"><div class="sto"><span>🖤</span><span>Edgy</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="luxe"><div class="sto"><span>💎</span><span>Luxe</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="sporty"><div class="sto"><span>⚡</span><span>Sporty</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="vintage"><div class="sto"><span>📻</span><span>Vintage</span></div></label>
+          <label class="st-opt multi"><input type="checkbox" name="q-vibe" value="preppy"><div class="sto"><span>🎀</span><span>Preppy</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="4">
+        <div class="st-icon">🎨</div>
+        <h2 class="st-q">Your favourite colour palette?</h2>
+        <p class="st-hint">Pick all that speak to you</p>
+        <div class="st-colors">
+          <label class="st-col"><input type="checkbox" name="q-color" value="neutrals"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#f5f5f0,#c8c8c0)"></div><span>Neutrals</span></div></label>
+          <label class="st-col"><input type="checkbox" name="q-color" value="earth"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#c8a882,#8b6347)"></div><span>Earth</span></div></label>
+          <label class="st-col"><input type="checkbox" name="q-color" value="pastels"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#ffd6e7,#c3e8ff)"></div><span>Pastels</span></div></label>
+          <label class="st-col"><input type="checkbox" name="q-color" value="bold"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#ff4d4d,#ffb700)"></div><span>Bold</span></div></label>
+          <label class="st-col"><input type="checkbox" name="q-color" value="mono"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#111,#888)"></div><span>Mono</span></div></label>
+          <label class="st-col"><input type="checkbox" name="q-color" value="jewel"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#7c3aed,#0ea5e9)"></div><span>Jewel</span></div></label>
+          <label class="st-col"><input type="checkbox" name="q-color" value="warm"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#f97316,#ec4899)"></div><span>Warm</span></div></label>
+          <label class="st-col"><input type="checkbox" name="q-color" value="neon"><div class="stcol"><div class="stcol-sw" style="background:linear-gradient(135deg,#39ff14,#ff00ff)"></div><span>Neons</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="5">
+        <div class="st-icon">💳</div>
+        <h2 class="st-q">What's your typical budget?</h2>
+        <p class="st-hint">Per complete outfit</p>
+        <div class="st-opts cols-2">
+          <label class="st-opt"><input type="radio" name="q-budget" value="budget"><div class="sto"><span>💰</span><span>Under $50</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-budget" value="mid"><div class="sto"><span>💳</span><span>$50 – $200</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-budget" value="premium"><div class="sto"><span>✨</span><span>$200 – $500</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-budget" value="luxury"><div class="sto"><span>💎</span><span>$500+</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="6">
+        <div class="st-icon">🌤</div>
+        <h2 class="st-q">Almost done!</h2>
+        <p class="st-hint">A couple more details for the perfect look</p>
+        <div class="st-opts cols-2" style="margin-bottom:18px">
+          <label class="st-opt"><input type="radio" name="q-season" value="spring"><div class="sto"><span>🌸</span><span>Spring</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-season" value="summer"><div class="sto"><span>☀️</span><span>Summer</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-season" value="autumn"><div class="sto"><span>🍂</span><span>Autumn</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-season" value="winter"><div class="sto"><span>❄️</span><span>Winter</span></div></label>
+        </div>
+        <label class="st-extras-lbl">Anything specific? (optional)</label>
+        <textarea id="q-extras" placeholder="e.g. I prefer loose fits, no synthetic fabrics, love layering…" rows="3"></textarea>
+      </div>
+
+    </div><!-- /st-steps -->
+
+    <div class="st-footer">
+      <button class="st-back" id="q-back" disabled>← Back</button>
+      <button class="st-next" id="q-next">
+        <span id="q-next-lbl">Next →</span>
+        <span id="q-spin" hidden>
+          <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Curating…
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULT VIEW (no reload) ══ -->
+<div class="st-wrap" id="view-result" hidden>
+  <div class="st-bg">
+    <div class="st-orb o1"></div>
+    <div class="st-orb o2"></div>
+  </div>
+
+  <div class="st-card">
+    <div class="r-top">
+      <div class="r-badge" id="r-badge">Casual Chic</div>
+      <div class="r-actions">
+        <button class="r-redo" id="r-redo">↻ Redo</button>
+        <button class="r-restart" id="r-restart">Start Over</button>
+      </div>
+    </div>
+
+    <div class="r-pieces" id="r-pieces"></div>
+
+    <div class="r-tips">
+      <h4>💡 Styling Tips</h4>
+      <ul id="r-tips-list"></ul>
+    </div>
+
+    <div class="r-palette">
+      <h4>🎨 Colour Palette</h4>
+      <div class="r-swatches" id="r-swatches"></div>
+    </div>
+
+    <button class="r-save" id="r-save">🔖 Save This Look</button>
+
+    <div id="saved-section" hidden>
+      <h4 class="saved-title">🔖 Saved Looks</h4>
+      <div class="saved-grid" id="saved-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+<script src="stylist.js"></script>
+</body>
+</html>
