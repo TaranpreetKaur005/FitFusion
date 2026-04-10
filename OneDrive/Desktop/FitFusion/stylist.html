@@ -21,8 +21,8 @@
   <nav class="sidebar-nav">
     <a href="index.html" class="sidebar-link"><span class="sl-icon">🏠</span> Home</a>
     <a href="stylist.html" class="sidebar-link active"><span class="sl-icon">✨</span> AI Stylist</a>
-    <a href="#" class="sidebar-link"><span class="sl-icon">👗</span> My Wardrobe</a>
-    <a href="#" class="sidebar-link"><span class="sl-icon">🔥</span> Trending</a>
+    <a href="wardrobe.html" class="sidebar-link"><span class="sl-icon">👗</span> My Wardrobe</a>
+    <a href="trending.html" class="sidebar-link"><span class="sl-icon">🔥</span> Trending</a>
     <a href="#" class="sidebar-link"><span class="sl-icon">📊</span> Style Analysis</a>
     <a href="#" class="sidebar-link"><span class="sl-icon">⚙️</span> Settings</a>
   </nav>
@@ -80,8 +80,8 @@
           </div>
         </div>
         <div class="dropdown-divider"></div>
-        <a href="#" class="dropdown-item">👗 My Wardrobe</a>
-        <a href="#" class="dropdown-item">✨ Style Preferences</a>
+        <a href="wardrobe.html" class="dropdown-item">👗 My Wardrobe</a>
+        <a href="trending.html" class="dropdown-item">✨ Style Preferences</a>
         <a href="#" class="dropdown-item">⚙️ Settings</a>
         <div class="dropdown-divider"></div>
         <button class="dropdown-item logout-btn" id="logout-btn">🚪 Sign Out</button>
@@ -219,7 +219,7 @@
     <div class="st-orb o2"></div>
   </div>
 
-  <div class="st-card">
+  <div class="st-card st-result-card">
     <div class="r-top">
       <div class="r-badge" id="r-badge">Casual Chic</div>
       <div class="r-actions">
@@ -227,6 +227,9 @@
         <button class="r-restart" id="r-restart">Start Over</button>
       </div>
     </div>
+
+    <!-- AI OUTFIT VISUAL -->
+    <div class="r-outfit-visual" id="r-outfit-visual"></div>
 
     <div class="r-pieces" id="r-pieces"></div>
 
@@ -240,11 +243,9 @@
       <div class="r-swatches" id="r-swatches"></div>
     </div>
 
-    <button class="r-save" id="r-save">🔖 Save This Look</button>
-
-    <div id="saved-section" hidden>
-      <h4 class="saved-title">🔖 Saved Looks</h4>
-      <div class="saved-grid" id="saved-grid"></div>
+    <div class="r-save-row">
+      <button class="r-save" id="r-save">🔖 Save This Look</button>
+      <button class="r-wardrobe" id="r-wardrobe-link">👗 View Wardrobe →</button>
     </div>
   </div>
 </div>
@@ -256,3 +257,4 @@
 <script src="stylist.js"></script>
 </body>
 </html>
+

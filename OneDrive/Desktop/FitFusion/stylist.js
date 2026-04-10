@@ -117,6 +117,17 @@ const DB = {
   },
 };
 
+/* ── OUTFIT TYPE THEMES (for visual generation) ── */
+const THEMES = {
+  casual:  { bg: 'linear-gradient(145deg,#e0f2fe,#f0fdf4)', top: '#3b82f6', bottom: '#1d4ed8', shoe: '#93c5fd' },
+  work:    { bg: 'linear-gradient(145deg,#f0f9ff,#e0e7ff)', top: '#1e3a5f', bottom: '#374151', shoe: '#6b7280' },
+  party:   { bg: 'linear-gradient(145deg,#1a1a2e,#2d1b69)',  top: '#d4af37', bottom: '#1a1a2e', shoe: '#f5f5f0' },
+  date:    { bg: 'linear-gradient(145deg,#fdf2f8,#fce7f3)',  top: '#c9a0a0', bottom: '#722f37', shoe: '#c19a6b' },
+  sport:   { bg: 'linear-gradient(145deg,#f0fdf4,#ecfdf5)',  top: '#3b82f6', bottom: '#111827', shoe: '#10b981' },
+  formal:  { bg: 'linear-gradient(145deg,#111827,#1f2937)',  top: '#0a0a0a', bottom: '#0a0a0a', shoe: '#c0c0c0' },
+  default: { bg: 'linear-gradient(145deg,#f5f3ff,#fdf2f8)',  top: '#7c3aed', bottom: '#4c1d95', shoe: '#a78bfa' },
+};
+
 function detectType(a) {
   const vibes = a.vibes || [];
   if (vibes.includes('sporty'))                              return 'sport';
@@ -124,6 +135,35 @@ function detectType(a) {
   if (vibes.includes('streetwear') || vibes.includes('edgy')) return 'casual';
   if (vibes.includes('boho') || vibes.includes('vintage'))  return 'casual';
   return 'default';
+}
+
+/* ── BUILD OUTFIT VISUAL HTML ── */
+function buildOutfitVisual(type, vibes) {
+  const theme = THEMES[type] || THEMES.default;
+  const tags  = (vibes || []).slice(0, 2);
+  return `
+    <div style="width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:16px">
+      <div style="position:absolute;inset:0;background:${theme.bg};opacity:0.95"></div>
+      ${tags.length ? `<div style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:4px;z-index:3">
+        ${tags.map(t => `<span style="background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);border-radius:50px;padding:3px 10px;font-size:10px;font-weight:600;color:#4c1d95;box-shadow:0 2px 8px rgba(0,0,0,0.1)">${t}</span>`).join('')}
+      </div>` : ''}
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.9);box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>
+        <div style="width:72px;height:80px;border-radius:10px 10px 6px 6px;background:${theme.top};box-shadow:0 6px 18px rgba(0,0,0,0.25);position:relative">
+          <div style="position:absolute;top:10px;left:-18px;width:20px;height:48px;border-radius:6px;background:${theme.top};opacity:0.85;transform:rotate(-8deg)"></div>
+          <div style="position:absolute;top:10px;right:-18px;width:20px;height:48px;border-radius:6px;background:${theme.top};opacity:0.85;transform:rotate(8deg)"></div>
+        </div>
+        <div style="width:76px;height:90px;border-radius:4px 4px 14px 14px;background:${theme.bottom};box-shadow:0 6px 18px rgba(0,0,0,0.2);position:relative">
+          <div style="position:absolute;bottom:0;left:2px;width:34px;height:58px;border-radius:0 0 10px 10px;background:${theme.bottom};filter:brightness(0.82)"></div>
+          <div style="position:absolute;bottom:0;right:2px;width:34px;height:58px;border-radius:0 0 10px 10px;background:${theme.bottom};filter:brightness(0.82)"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:2px">
+          <div style="width:30px;height:11px;border-radius:0 0 6px 6px;background:${theme.shoe};box-shadow:0 3px 8px rgba(0,0,0,0.2)"></div>
+          <div style="width:30px;height:11px;border-radius:0 0 6px 6px;background:${theme.shoe};box-shadow:0 3px 8px rgba(0,0,0,0.2)"></div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.3)">AI Generated ✨</div>
+    </div>`;
 }
 
 /* ══════════════════════════════
@@ -172,7 +212,6 @@ document.querySelectorAll('input[name="q-vibe"]').forEach(cb => {
 });
 
 nextBtn.addEventListener('click', async () => {
-  // Gate: require login before starting the questionnaire
   if (!localStorage.getItem('ff_user')) {
     window.requireAuth && window.requireAuth();
     return;
@@ -201,17 +240,25 @@ backBtn.addEventListener('click', () => { if (step > 1) goToStep(step - 1); });
    SHOW RESULT (no reload)
 ══════════════════════════════ */
 let lastAnswers = null;
+let lastType    = null;
 
 function showResult(a) {
   lastAnswers = a;
-  const type = detectType(a);
-  const data = DB[type];
+  const type  = detectType(a);
+  lastType    = type;
+  const data  = DB[type];
 
   let label = data.label;
   if (a.season) label = a.season.charAt(0).toUpperCase() + a.season.slice(1) + ' ' + label;
   if (a.budget === 'luxury') label = 'Luxury ' + label;
 
   document.getElementById('r-badge').textContent = label;
+
+  // ── OUTFIT IMAGE VISUAL ──
+  const visualEl = document.getElementById('r-outfit-visual');
+  if (visualEl) {
+    visualEl.innerHTML = buildOutfitVisual(type, a.vibes);
+  }
 
   document.getElementById('r-pieces').innerHTML = data.pieces.map((p, i) => `
     <div class="r-piece" style="animation-delay:${i*0.06}s">
@@ -258,12 +305,12 @@ function showResult(a) {
   showToast(`${label} ready ✨`, 'success');
 }
 
-/* ── REDO (keep answers, regenerate) ── */
+/* ── REDO ── */
 document.getElementById('r-redo').addEventListener('click', () => {
   if (lastAnswers) showResult(lastAnswers);
 });
 
-/* ── START OVER (back to Q1, no reload) ── */
+/* ── START OVER ── */
 document.getElementById('r-restart').addEventListener('click', () => {
   answers = {};
   document.querySelectorAll('#view-quiz input').forEach(i => i.checked = false);
@@ -294,37 +341,62 @@ document.getElementById('r-restart').addEventListener('click', () => {
   }, 260);
 });
 
-/* ── SAVE LOOK ── */
-let saved = JSON.parse(localStorage.getItem('ff_saved_looks') || '[]');
+/* ══════════════════════════════
+   SAVE LOOK → WARDROBE
+══════════════════════════════ */
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
 
 document.getElementById('r-save').addEventListener('click', () => {
   if (!lastAnswers) return;
-  const data = DB[detectType(lastAnswers)];
-  saved.unshift({ label: document.getElementById('r-badge').textContent, pieces: data.pieces, ts: new Date().toLocaleString() });
-  if (saved.length > 10) saved.pop();
+  const type  = lastType || detectType(lastAnswers);
+  const data  = DB[type];
+  const label = document.getElementById('r-badge').textContent;
+
+  const look = {
+    id:      generateId(),
+    label,
+    type,
+    pieces:  data.pieces,
+    tips:    data.tips,
+    palette: data.palette,
+    answers: lastAnswers,
+    ts:      new Date().toLocaleString(),
+    fav:     false,
+  };
+
+  const saved = JSON.parse(localStorage.getItem('ff_saved_looks') || '[]');
+  saved.unshift(look);
+  if (saved.length > 50) saved.pop();
   localStorage.setItem('ff_saved_looks', JSON.stringify(saved));
-  renderSaved();
-  showToast('Look saved 🔖', 'success');
+
+  showToast('Look saved to Wardrobe 👗', 'success');
+
+  // Update save button
+  const saveBtn = document.getElementById('r-save');
+  saveBtn.textContent = '✓ Saved to Wardrobe';
+  saveBtn.style.background = 'rgba(16,185,129,0.08)';
+  saveBtn.style.borderColor = '#10b981';
+  saveBtn.style.color = '#10b981';
+  setTimeout(() => {
+    saveBtn.textContent = '🔖 Save This Look';
+    saveBtn.style.background = '';
+    saveBtn.style.borderColor = '';
+    saveBtn.style.color = '';
+  }, 3000);
 });
 
-function renderSaved() {
-  const sec  = document.getElementById('saved-section');
-  const grid = document.getElementById('saved-grid');
-  if (!saved.length) { sec.hidden = true; return; }
-  sec.hidden = false;
-  grid.innerHTML = saved.map((l, i) => `
-    <div class="saved-card" style="animation-delay:${i*0.05}s">
-      <div class="saved-card-title">${l.label}</div>
-      <div class="saved-card-meta">${l.ts}</div>
-      <div class="saved-card-tags">
-        ${l.pieces.slice(0,4).map(p=>`<span class="saved-tag">${p.icon} ${p.type}</span>`).join('')}
-      </div>
-    </div>`).join('');
+/* ── WARDROBE LINK ── */
+const wdLink = document.getElementById('r-wardrobe-link');
+if (wdLink) {
+  wdLink.addEventListener('click', () => {
+    window.location.href = 'wardrobe.html';
+  });
 }
 
 /* ── INIT ── */
 goToStep(1);
-renderSaved();
 
 /* ── READ PRE-FILL FROM TRENDING PAGE ── */
 (function applyPrefill() {
@@ -335,36 +407,30 @@ renderSaved();
   try {
     const p = JSON.parse(raw);
 
-    // vibes (checkboxes)
     if (p.vibes) {
       document.querySelectorAll('input[name="q-vibe"]').forEach(cb => {
         cb.checked = p.vibes.includes(cb.value);
       });
     }
-    // colors (checkboxes)
     if (p.colors) {
       document.querySelectorAll('input[name="q-color"]').forEach(cb => {
         cb.checked = p.colors.includes(cb.value);
       });
     }
-    // budget (radio)
     if (p.budget) {
       const el = document.querySelector(`input[name="q-budget"][value="${p.budget}"]`);
       if (el) el.checked = true;
     }
-    // season (radio)
     if (p.season) {
       const el = document.querySelector(`input[name="q-season"][value="${p.season}"]`);
       if (el) el.checked = true;
     }
 
-    // Store in answers so generate works immediately
     answers.vibes  = p.vibes  || [];
     answers.colors = p.colors || [];
     answers.budget = p.budget || '';
     answers.season = p.season || '';
 
-    // Show a toast so user knows it's pre-filled
     showToast('Style pre-filled from your selection ✨', 'success');
   } catch (e) { /* ignore */ }
 })();
