@@ -57,7 +57,7 @@
   <nav class="nav-links">
     <a href="index.html" class="nav-link">Home</a>
     <a href="stylist.html" class="nav-link nav-link-active">AI Stylist</a>
-    <a href="#" class="nav-link">Wardrobe</a>
+    <a href="wardrobe.html" class="nav-link">Wardrobe</a>
     <a href="trending.html" class="nav-link">Trendy Suggestions</a>
   </nav>
   <div class="nav-right">
@@ -104,11 +104,11 @@
       <div>
         <span class="st-badge">✨ AI Stylist</span>
         <h1 class="st-title" id="q-greeting">Build your style profile</h1>
-        <p class="st-subtitle">Answer 6 quick questions and we'll curate the perfect outfit for you.</p>
+        <p class="st-subtitle">Answer 9 quick questions and we'll curate the perfect outfit for you.</p>
       </div>
       <div class="st-prog-wrap">
         <div class="st-prog-bar"><div class="st-prog-fill" id="q-fill"></div></div>
-        <span class="st-prog-label" id="q-label">Step 1 of 6</span>
+        <span class="st-prog-label" id="q-label">Step 1 of 9</span>
       </div>
     </div>
 
@@ -185,13 +185,51 @@
 
       <div class="st-step" data-q="6">
         <div class="st-icon">🌤</div>
-        <h2 class="st-q">Almost done!</h2>
+        <h2 class="st-q">What season are you dressing for?</h2>
         <p class="st-hint">A couple more details for the perfect look</p>
         <div class="st-opts cols-2" style="margin-bottom:18px">
           <label class="st-opt"><input type="radio" name="q-season" value="spring"><div class="sto"><span>🌸</span><span>Spring</span></div></label>
           <label class="st-opt"><input type="radio" name="q-season" value="summer"><div class="sto"><span>☀️</span><span>Summer</span></div></label>
           <label class="st-opt"><input type="radio" name="q-season" value="autumn"><div class="sto"><span>🍂</span><span>Autumn</span></div></label>
           <label class="st-opt"><input type="radio" name="q-season" value="winter"><div class="sto"><span>❄️</span><span>Winter</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="7">
+        <div class="st-icon">🕐</div>
+        <h2 class="st-q">When are you wearing this?</h2>
+        <p class="st-hint">Time of day shapes the whole look</p>
+        <div class="st-opts cols-2">
+          <label class="st-opt"><input type="radio" name="q-time" value="morning"><div class="sto"><span>🌅</span><span>Morning</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-time" value="afternoon"><div class="sto"><span>☀️</span><span>Afternoon</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-time" value="evening"><div class="sto"><span>🌆</span><span>Evening</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-time" value="night"><div class="sto"><span>🌙</span><span>Night</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="8">
+        <div class="st-icon">🧍</div>
+        <h2 class="st-q">What's your body type?</h2>
+        <p class="st-hint">We'll suggest the most flattering silhouettes</p>
+        <div class="st-opts cols-3">
+          <label class="st-opt"><input type="radio" name="q-body" value="hourglass"><div class="sto"><span>⌛</span><span>Hourglass</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-body" value="pear"><div class="sto"><span>🍐</span><span>Pear</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-body" value="apple"><div class="sto"><span>🍎</span><span>Apple</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-body" value="rectangle"><div class="sto"><span>▭</span><span>Rectangle</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-body" value="inverted"><div class="sto"><span>🔺</span><span>Inverted Triangle</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-body" value="any"><div class="sto"><span>✨</span><span>Any / Skip</span></div></label>
+        </div>
+      </div>
+
+      <div class="st-step" data-q="9">
+        <div class="st-icon">🌍</div>
+        <h2 class="st-q">Any dress code or cultural considerations?</h2>
+        <p class="st-hint">We'll keep recommendations respectful and appropriate</p>
+        <div class="st-opts cols-2" style="margin-bottom:18px">
+          <label class="st-opt"><input type="radio" name="q-culture" value="none"><div class="sto"><span>🆓</span><span>No restrictions</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-culture" value="modest"><div class="sto"><span>🧕</span><span>Modest / Covered</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-culture" value="conservative"><div class="sto"><span>👔</span><span>Conservative</span></div></label>
+          <label class="st-opt"><input type="radio" name="q-culture" value="traditional"><div class="sto"><span>🪭</span><span>Traditional / Cultural</span></div></label>
         </div>
         <label class="st-extras-lbl">Anything specific? (optional)</label>
         <textarea id="q-extras" placeholder="e.g. I prefer loose fits, no synthetic fabrics, love layering…" rows="3"></textarea>
@@ -230,6 +268,22 @@
 
     <!-- AI OUTFIT VISUAL -->
     <div class="r-outfit-visual" id="r-outfit-visual"></div>
+
+    <!-- CONFIDENCE SCORE -->
+    <div class="r-confidence" id="r-confidence">
+      <div class="r-conf-left">
+        <span class="r-conf-label">Style Match Score</span>
+        <span class="r-conf-score" id="r-conf-score">94%</span>
+      </div>
+      <div class="r-conf-bar-wrap">
+        <div class="r-conf-bar"><div class="r-conf-fill" id="r-conf-fill" style="width:94%"></div></div>
+        <span class="r-conf-desc" id="r-conf-desc">Excellent match for your profile</span>
+      </div>
+      <button class="r-export-btn" id="r-export-btn">⬇ Export Report</button>
+    </div>
+
+    <!-- PROFILE SUMMARY -->
+    <div class="r-profile-summary" id="r-profile-summary"></div>
 
     <div class="r-pieces" id="r-pieces"></div>
 

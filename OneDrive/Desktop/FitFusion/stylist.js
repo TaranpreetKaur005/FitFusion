@@ -169,7 +169,7 @@ function buildOutfitVisual(type, vibes) {
 /* ══════════════════════════════
    QUESTIONNAIRE
 ══════════════════════════════ */
-const TOTAL = 6;
+const TOTAL = 9;
 let step = 1;
 let answers = {};
 
@@ -197,7 +197,10 @@ function collect(n) {
     case 3: { const c = [...document.querySelectorAll('input[name="q-vibe"]:checked')]; if (!c.length) { showToast('Pick at least one style vibe.','error'); return false; } answers.vibes = c.map(x=>x.value); return true; }
     case 4: { const c = [...document.querySelectorAll('input[name="q-color"]:checked')]; if (!c.length) { showToast('Pick at least one colour palette.','error'); return false; } answers.colors = c.map(x=>x.value); return true; }
     case 5: { const v = document.querySelector('input[name="q-budget"]:checked');  if (!v) { showToast('Please select a budget range.','error'); return false; } answers.budget = v.value; return true; }
-    case 6: { const v = document.querySelector('input[name="q-season"]:checked');  if (!v) { showToast('Please select a season.','error'); return false; } answers.season = v.value; answers.extras = document.getElementById('q-extras').value.trim(); return true; }
+    case 6: { const v = document.querySelector('input[name="q-season"]:checked');  if (!v) { showToast('Please select a season.','error'); return false; } answers.season = v.value; return true; }
+    case 7: { const v = document.querySelector('input[name="q-time"]:checked'); if (!v) { showToast('Please select a time of day.','error'); return false; } answers.time = v.value; return true; }
+    case 8: { const v = document.querySelector('input[name="q-body"]:checked'); if (!v) { showToast('Please select a body type.','error'); return false; } answers.body = v.value; return true; }
+    case 9: { const v = document.querySelector('input[name="q-culture"]:checked'); if (!v) { showToast('Please select a dress code preference.','error'); return false; } answers.culture = v.value; answers.extras = document.getElementById('q-extras').value.trim(); return true; }
   }
 }
 
@@ -237,6 +240,29 @@ nextBtn.addEventListener('click', async () => {
 backBtn.addEventListener('click', () => { if (step > 1) goToStep(step - 1); });
 
 /* ══════════════════════════════
+   CONFIDENCE SCORE
+══════════════════════════════ */
+function calcConfidence(a) {
+  let score = 70;
+  if (a.vibes?.length >= 2) score += 8;
+  if (a.colors?.length >= 2) score += 6;
+  if (a.budget) score += 4;
+  if (a.body && a.body !== 'any') score += 5;
+  if (a.culture) score += 4;
+  if (a.time) score += 3;
+  if (a.extras?.length > 10) score += 5;
+  return Math.min(score, 99);
+}
+
+function getConfidenceDesc(score) {
+  if (score >= 95) return 'Perfect match for your unique style';
+  if (score >= 88) return 'Excellent match for your profile';
+  if (score >= 80) return 'Great fit for your preferences';
+  if (score >= 70) return 'Good match — try adding more details';
+  return 'Decent match — more answers = better results';
+}
+
+/* ══════════════════════════════
    SHOW RESULT (no reload)
 ══════════════════════════════ */
 let lastAnswers = null;
@@ -258,6 +284,30 @@ function showResult(a) {
   const visualEl = document.getElementById('r-outfit-visual');
   if (visualEl) {
     visualEl.innerHTML = buildOutfitVisual(type, a.vibes);
+  }
+
+  // Confidence score
+  const score = calcConfidence(a);
+  const scoreEl = document.getElementById('r-conf-score');
+  const fillEl2 = document.getElementById('r-conf-fill');
+  const descEl  = document.getElementById('r-conf-desc');
+  if (scoreEl) scoreEl.textContent = score + '%';
+  if (fillEl2) fillEl2.style.width = score + '%';
+  if (descEl)  descEl.textContent  = getConfidenceDesc(score);
+
+  // Profile summary
+  const summaryEl = document.getElementById('r-profile-summary');
+  if (summaryEl) {
+    const chips = [
+      a.gender   && `${a.gender === 'women' ? '👩' : a.gender === 'men' ? '👨' : '🧑'} ${a.gender}`,
+      a.fit      && `✂️ ${a.fit}`,
+      a.time     && `🕐 ${a.time}`,
+      a.body     && a.body !== 'any' && `🧍 ${a.body}`,
+      a.season   && `🌤 ${a.season}`,
+      a.budget   && `💳 ${a.budget}`,
+      a.culture  && a.culture !== 'none' && `🌍 ${a.culture}`,
+    ].filter(Boolean);
+    summaryEl.innerHTML = chips.map(c => `<span class="r-profile-chip">${c}</span>`).join('');
   }
 
   document.getElementById('r-pieces').innerHTML = data.pieces.map((p, i) => `
@@ -394,6 +444,59 @@ if (wdLink) {
     window.location.href = 'wardrobe.html';
   });
 }
+
+/* ── EXPORT REPORT ── */
+document.getElementById('r-export-btn')?.addEventListener('click', () => {
+  if (!lastAnswers) return;
+  const type  = lastType || detectType(lastAnswers);
+  const data  = DB[type];
+  const label = document.getElementById('r-badge').textContent;
+  const score = calcConfidence(lastAnswers);
+
+  const lines = [
+    '═══════════════════════════════════',
+    '        🔥 FITFUSION OUTFIT REPORT',
+    '═══════════════════════════════════',
+    '',
+    `Look: ${label}`,
+    `Style Match Score: ${score}%`,
+    `Generated: ${new Date().toLocaleString()}`,
+    '',
+    '── YOUR PROFILE ──',
+    `Gender: ${lastAnswers.gender || '—'}`,
+    `Fit: ${lastAnswers.fit || '—'}`,
+    `Vibes: ${(lastAnswers.vibes || []).join(', ') || '—'}`,
+    `Colours: ${(lastAnswers.colors || []).join(', ') || '—'}`,
+    `Budget: ${lastAnswers.budget || '—'}`,
+    `Season: ${lastAnswers.season || '—'}`,
+    `Time: ${lastAnswers.time || '—'}`,
+    `Body Type: ${lastAnswers.body || '—'}`,
+    `Dress Code: ${lastAnswers.culture || '—'}`,
+    lastAnswers.extras ? `Notes: ${lastAnswers.extras}` : '',
+    '',
+    '── OUTFIT PIECES ──',
+    ...data.pieces.map(p => `${p.icon} ${p.type}: ${p.name} — ${p.detail}`),
+    '',
+    '── STYLING TIPS ──',
+    ...data.tips.map((t, i) => `${i + 1}. ${t}`),
+    '',
+    '── COLOUR PALETTE ──',
+    ...data.palette.map(s => `● ${s.name} (${s.color})`),
+    '',
+    '═══════════════════════════════════',
+    '  Generated by FitFusion AI Stylist',
+    '═══════════════════════════════════',
+  ].filter(l => l !== undefined).join('\n');
+
+  const blob = new Blob([lines], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `fitfusion-${label.replace(/\s+/g, '-').toLowerCase()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Report downloaded ✓', 'success');
+});
 
 /* ── INIT ── */
 goToStep(1);
