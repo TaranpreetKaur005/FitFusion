@@ -232,12 +232,12 @@ function openModal(id) {
 
   // Show modal
   const overlay = document.getElementById('wd-modal');
-  overlay.hidden = false;
+  overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
-  document.getElementById('wd-modal').hidden = true;
+  document.getElementById('wd-modal').classList.remove('open');
   document.body.style.overflow = '';
   activeId = null;
 }
