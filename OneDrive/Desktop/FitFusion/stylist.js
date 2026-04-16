@@ -140,38 +140,130 @@ function detectType(a) {
 /* ══════════════════════════════
    AI IMAGE GENERATION
    Uses Pollinations.ai — free, no API key
+   Model: flux (best quality)
 ══════════════════════════════ */
 
 let currentImageUrl = null;
 
-/* Build a detailed fashion prompt from user answers */
+/* ── GENDER → model descriptor ── */
+const GENDER_MAP = {
+  women:  'beautiful young woman',
+  men:    'handsome young man',
+  unisex: 'androgynous fashion model',
+};
+
+/* ── FIT → silhouette descriptor ── */
+const FIT_MAP = {
+  oversized:    'oversized relaxed silhouette',
+  fitted:       'slim fitted tailored silhouette',
+  balanced:     'balanced proportional silhouette',
+  flowy:        'flowy draped silhouette',
+};
+
+/* ── VIBE → style keywords ── */
+const VIBE_MAP = {
+  minimal:    'minimalist clean aesthetic',
+  streetwear: 'urban streetwear aesthetic',
+  classic:    'timeless classic elegance',
+  boho:       'bohemian free-spirited style',
+  edgy:       'edgy dark fashion aesthetic',
+  luxe:       'high-end luxury fashion',
+  sporty:     'athletic sporty activewear',
+  vintage:    'vintage retro fashion',
+  preppy:     'preppy collegiate style',
+};
+
+/* ── COLOR → palette descriptor ── */
+const COLOR_MAP = {
+  neutrals: 'neutral beige cream ivory tones',
+  earth:    'earthy terracotta rust brown tones',
+  pastels:  'soft pastel pink lavender blue tones',
+  bold:     'bold vibrant red orange yellow tones',
+  mono:     'monochrome black white grey tones',
+  jewel:    'jewel tone sapphire emerald amethyst',
+  warm:     'warm coral peach rose gold tones',
+  neon:     'neon electric bright fluorescent tones',
+};
+
+/* ── SEASON → environment ── */
+const SEASON_MAP = {
+  spring: 'spring garden background, soft natural light',
+  summer: 'bright summer outdoor background, golden sunlight',
+  autumn: 'autumn park background, warm golden hour light',
+  winter: 'winter indoor studio, cool crisp lighting',
+};
+
+/* ── TIME → lighting ── */
+const TIME_MAP = {
+  morning:   'soft morning golden hour lighting',
+  afternoon: 'bright natural daylight',
+  evening:   'warm evening ambient lighting',
+  night:     'dramatic night club neon lighting',
+};
+
+/* ── BODY → pose guidance ── */
+const BODY_MAP = {
+  hourglass:  'hourglass figure, confident pose',
+  pear:       'pear shaped figure, elegant pose',
+  apple:      'apple shaped figure, stylish pose',
+  rectangle:  'athletic rectangular figure, dynamic pose',
+  inverted:   'inverted triangle figure, powerful pose',
+};
+
+/* ── CULTURE → modesty ── */
+const CULTURE_MAP = {
+  modest:       'modest covered clothing, full coverage',
+  conservative: 'conservative professional attire',
+  traditional:  'traditional cultural fashion elements',
+};
+
+/* Build the highest-quality fashion prompt */
 function buildImagePrompt(answers, outfitLabel, pieces) {
-  const gender  = answers.gender  || 'person';
-  const fit     = answers.fit     || 'balanced';
-  const vibes   = (answers.vibes  || []).join(', ') || 'stylish';
-  const colors  = (answers.colors || []).join(', ') || 'neutral';
-  const season  = answers.season  || 'spring';
-  const time    = answers.time    || 'daytime';
-  const body    = answers.body && answers.body !== 'any' ? answers.body : '';
-  const culture = answers.culture && answers.culture !== 'none' ? answers.culture : '';
+  const genderDesc  = GENDER_MAP[answers.gender]  || 'fashion model';
+  const fitDesc     = FIT_MAP[answers.fit]         || '';
+  const vibeDescs   = (answers.vibes  || []).map(v => VIBE_MAP[v]).filter(Boolean).join(', ');
+  const colorDescs  = (answers.colors || []).map(c => COLOR_MAP[c]).filter(Boolean).join(', ');
+  const seasonDesc  = SEASON_MAP[answers.season]   || 'studio background';
+  const timeDesc    = TIME_MAP[answers.time]        || 'professional studio lighting';
+  const bodyDesc    = answers.body && answers.body !== 'any' ? (BODY_MAP[answers.body] || '') : '';
+  const cultureDesc = answers.culture && answers.culture !== 'none' ? (CULTURE_MAP[answers.culture] || '') : '';
 
-  // Top 4 outfit pieces for the prompt
-  const pieceNames = pieces.slice(0, 4).map(p => p.name).join(', ');
+  // All outfit pieces as a natural sentence
+  const allPieces = pieces.map(p => `${p.name}`).join(', ');
 
-  const parts = [
-    `fashion photography of a ${gender} model`,
-    body ? `with ${body} body type` : '',
-    `wearing ${pieceNames}`,
-    `${vibes} style, ${fit} fit`,
-    `${colors} color palette`,
-    `${season} season, ${time}`,
-    culture ? `${culture} dress code` : '',
-    `full body shot, studio lighting, high fashion editorial`,
-    `clean white background, professional fashion photo`,
-    `ultra detailed, 8k, photorealistic`,
+  // Build structured prompt — order matters for quality
+  const positive = [
+    // Subject
+    `professional fashion editorial photo of a ${genderDesc}`,
+    bodyDesc,
+    // Outfit
+    `wearing ${allPieces}`,
+    fitDesc,
+    // Style
+    vibeDescs,
+    // Colors
+    colorDescs ? `color palette: ${colorDescs}` : '',
+    // Culture/modesty
+    cultureDesc,
+    // Environment & lighting
+    seasonDesc,
+    timeDesc,
+    // Technical quality boosters
+    'full body shot showing complete outfit from head to toe',
+    'Vogue magazine editorial style',
+    'shot on Hasselblad medium format camera',
+    'f/2.8 aperture, shallow depth of field',
+    'perfect skin, sharp focus on clothing details',
+    'high fashion lookbook photography',
+    'professional model pose',
+    'ultra-high resolution, 8K, hyperrealistic',
+    'award-winning fashion photography',
   ].filter(Boolean).join(', ');
 
-  return parts;
+  // Negative prompt to avoid bad outputs
+  const negative = 'ugly, deformed, blurry, low quality, bad anatomy, extra limbs, missing limbs, watermark, text, logo, cartoon, anime, illustration, painting, drawing, sketch, nsfw, nude, explicit';
+
+  return { positive, negative };
 }
 
 /* Show loading skeleton */
@@ -183,6 +275,7 @@ function showImageLoading(container) {
         <div class="r-img-spinner"></div>
         <span>Generating your look with AI…</span>
       </div>
+      <div class="r-img-loading-sub">This takes 10–20 seconds</div>
     </div>`;
 }
 
@@ -216,113 +309,137 @@ function showImageFallback(container, type, vibes) {
   document.getElementById('r-img-caption').textContent = 'AI image unavailable — showing style preview';
 }
 
-/* Generate image via Pollinations.ai */
-async function generateOutfitImage(answers, outfitLabel, pieces, type) {
-  const container  = document.getElementById('r-outfit-visual');
-  const caption    = document.getElementById('r-img-caption');
-  const dlBtn      = document.getElementById('r-img-download');
-  const regenBtn   = document.getElementById('r-img-regen');
+/* Load image with timeout — returns Promise<HTMLImageElement> */
+function loadImageWithTimeout(url, timeoutMs = 45000) {
+  return new Promise((resolve, reject) => {
+    const img     = new Image();
+    const timer   = setTimeout(() => {
+      img.src = ''; // cancel
+      reject(new Error('timeout'));
+    }, timeoutMs);
 
-  currentImageUrl  = null;
-  dlBtn.disabled   = true;
+    img.onload  = () => { clearTimeout(timer); resolve(img); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error('load error')); };
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+  });
+}
+
+/* Render loaded image into container */
+function renderImage(container, img, outfitLabel) {
+  container.innerHTML = '';
+  container.style.background = 'none';
+  container.style.position   = 'relative';
+
+  const imgEl = document.createElement('img');
+  imgEl.src   = img.src;
+  imgEl.alt   = outfitLabel;
+  imgEl.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:16px;display:block';
+  container.appendChild(imgEl);
+
+  const badge = document.createElement('div');
+  badge.style.cssText = [
+    'position:absolute',
+    'bottom:12px',
+    'right:12px',
+    'background:rgba(0,0,0,0.6)',
+    'backdrop-filter:blur(10px)',
+    '-webkit-backdrop-filter:blur(10px)',
+    'color:white',
+    'font-size:10px',
+    'font-weight:700',
+    'padding:5px 12px',
+    'border-radius:50px',
+    'letter-spacing:0.5px',
+    'border:1px solid rgba(255,255,255,0.15)',
+  ].join(';');
+  badge.textContent = '✨ AI Generated';
+  container.appendChild(badge);
+}
+
+/* Main generation function — tries up to 2 attempts */
+async function generateOutfitImage(answers, outfitLabel, pieces, type) {
+  const container = document.getElementById('r-outfit-visual');
+  const caption   = document.getElementById('r-img-caption');
+  const dlBtn     = document.getElementById('r-img-download');
+  const regenBtn  = document.getElementById('r-img-regen');
+
+  currentImageUrl   = null;
+  dlBtn.disabled    = true;
   regenBtn.disabled = true;
   showImageLoading(container);
   caption.textContent = '';
 
-  const prompt = buildImagePrompt(answers, outfitLabel, pieces);
-  // Add a random seed so regenerate gives a different image
-  const seed   = Math.floor(Math.random() * 999999);
-  // Pollinations.ai free image API — no key needed
-  const url    = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=768&seed=${seed}&nologo=true&model=flux`;
+  const { positive, negative } = buildImagePrompt(answers, outfitLabel, pieces);
+  const seed = Math.floor(Math.random() * 9999999);
 
+  // Pollinations.ai — flux model, 768×1024 portrait, enhanced
+  const buildUrl = (s) =>
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(positive)}` +
+    `?width=768&height=1024&seed=${s}&model=flux&enhance=true&nologo=true` +
+    `&negative=${encodeURIComponent(negative)}`;
+
+  let succeeded = false;
+
+  // Attempt 1
   try {
-    await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-
-      img.onload = () => {
-        container.innerHTML = '';
-        container.style.background = 'none';
-
-        const imgEl = document.createElement('img');
-        imgEl.src   = img.src;
-        imgEl.alt   = outfitLabel;
-        imgEl.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:16px;display:block';
-        container.appendChild(imgEl);
-
-        // Overlay badge
-        const badge = document.createElement('div');
-        badge.style.cssText = 'position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);color:white;font-size:10px;font-weight:600;padding:4px 10px;border-radius:50px;letter-spacing:0.5px';
-        badge.textContent = '✨ AI Generated';
-        container.style.position = 'relative';
-        container.appendChild(badge);
-
-        currentImageUrl = img.src;
-        dlBtn.disabled  = false;
-        caption.textContent = `"${outfitLabel}" — generated by Pollinations AI`;
-        resolve();
-      };
-
-      img.onerror = () => reject(new Error('Image load failed'));
-
-      // Set timeout — Pollinations can be slow
-      const timeout = setTimeout(() => reject(new Error('Timeout')), 30000);
-      img.onload = function() {
-        clearTimeout(timeout);
-        // re-run the onload logic
-        container.innerHTML = '';
-        container.style.background = 'none';
-        const imgEl = document.createElement('img');
-        imgEl.src   = this.src;
-        imgEl.alt   = outfitLabel;
-        imgEl.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:16px;display:block';
-        container.appendChild(imgEl);
-        const badge = document.createElement('div');
-        badge.style.cssText = 'position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);color:white;font-size:10px;font-weight:600;padding:4px 10px;border-radius:50px;letter-spacing:0.5px';
-        badge.textContent = '✨ AI Generated';
-        container.style.position = 'relative';
-        container.appendChild(badge);
-        currentImageUrl = this.src;
-        dlBtn.disabled  = false;
-        caption.textContent = `"${outfitLabel}" — generated by Pollinations AI`;
-        resolve();
-      };
-
-      img.src = url;
-    });
-  } catch (err) {
-    showImageFallback(container, type, answers.vibes);
-    caption.textContent = 'Could not load AI image — showing style preview instead';
-    showToast('AI image timed out — showing style preview', 'error');
-  } finally {
-    regenBtn.disabled = false;
+    const img = await loadImageWithTimeout(buildUrl(seed), 45000);
+    renderImage(container, img, outfitLabel);
+    currentImageUrl = img.src;
+    dlBtn.disabled  = false;
+    caption.textContent = `"${outfitLabel}" · AI-generated fashion photo`;
+    succeeded = true;
+  } catch (e1) {
+    // Attempt 2 — different seed, shorter timeout
+    try {
+      showImageLoading(container);
+      caption.textContent = 'Retrying…';
+      const img2 = await loadImageWithTimeout(buildUrl(seed + 1), 35000);
+      renderImage(container, img2, outfitLabel);
+      currentImageUrl = img2.src;
+      dlBtn.disabled  = false;
+      caption.textContent = `"${outfitLabel}" · AI-generated fashion photo`;
+      succeeded = true;
+    } catch (e2) {
+      showImageFallback(container, type, answers.vibes);
+      showToast('AI image unavailable — showing style preview', 'error');
+    }
   }
+
+  regenBtn.disabled = false;
+  if (succeeded) showToast('AI image generated ✨', 'success');
 }
 
 /* ── DOWNLOAD IMAGE ── */
 document.getElementById('r-img-download')?.addEventListener('click', async () => {
   if (!currentImageUrl) return;
+  const dlBtn = document.getElementById('r-img-download');
+  dlBtn.textContent = '⏳ Downloading…';
+  dlBtn.disabled = true;
   try {
     const res  = await fetch(currentImageUrl);
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `fitfusion-outfit-${Date.now()}.jpg`;
+    a.download = `fitfusion-${Date.now()}.jpg`;
     a.click();
     URL.revokeObjectURL(url);
     showToast('Image downloaded ✓', 'success');
   } catch {
-    // Fallback: open in new tab
     window.open(currentImageUrl, '_blank');
+    showToast('Opened in new tab ✓', 'success');
+  } finally {
+    dlBtn.textContent = '⬇ Download';
+    dlBtn.disabled = false;
   }
 });
 
 /* ── REGENERATE IMAGE ── */
 document.getElementById('r-img-regen')?.addEventListener('click', () => {
   if (!lastAnswers) return;
-  const type = lastType || detectType(lastAnswers);
-  const data = DB[type];
+  const type  = lastType || detectType(lastAnswers);
+  const data  = DB[type];
   const label = document.getElementById('r-badge').textContent;
   generateOutfitImage(lastAnswers, label, data.pieces, type);
 });
