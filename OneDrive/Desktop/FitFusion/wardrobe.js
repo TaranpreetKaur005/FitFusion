@@ -196,8 +196,18 @@ function openModal(id) {
   if (!look) return;
   activeId = id;
 
-  // Visual
-  document.getElementById('modal-visual').innerHTML = buildOutfitCanvas(look, 'modal');
+  // Visual — use saved AI image if available, else CSS canvas
+  const visualEl = document.getElementById('modal-visual');
+  if (look.imgUrl) {
+    visualEl.innerHTML = `
+      <img src="${look.imgUrl}" alt="${look.label}"
+        style="width:100%;height:100%;object-fit:cover;border-radius:18px;display:block"
+        onerror="this.parentElement.innerHTML=''">
+      <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);color:white;font-size:10px;font-weight:600;padding:3px 9px;border-radius:50px">✨ AI Generated</div>`;
+    visualEl.style.position = 'relative';
+  } else {
+    visualEl.innerHTML = buildOutfitCanvas(look, 'modal');
+  }
 
   // Meta
   document.getElementById('modal-badge').textContent  = look.type || 'Style';

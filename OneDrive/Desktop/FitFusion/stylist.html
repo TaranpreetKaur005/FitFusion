@@ -266,8 +266,20 @@
       </div>
     </div>
 
-    <!-- AI OUTFIT VISUAL -->
-    <div class="r-outfit-visual" id="r-outfit-visual"></div>
+    <!-- AI OUTFIT IMAGE GENERATION -->
+    <div class="r-img-section">
+      <div class="r-img-header">
+        <span class="r-img-label">🎨 AI Generated Look</span>
+        <div class="r-img-actions">
+          <button class="r-img-btn" id="r-img-regen" title="Generate new image">↻ Regenerate</button>
+          <button class="r-img-btn r-img-dl" id="r-img-download" title="Download image" disabled>⬇ Download</button>
+        </div>
+      </div>
+      <div class="r-outfit-visual" id="r-outfit-visual">
+        <!-- filled by JS: loading state → real image -->
+      </div>
+      <p class="r-img-caption" id="r-img-caption"></p>
+    </div>
 
     <!-- CONFIDENCE SCORE -->
     <div class="r-confidence" id="r-confidence">

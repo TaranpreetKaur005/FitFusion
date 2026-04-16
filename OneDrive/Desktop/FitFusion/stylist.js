@@ -117,7 +117,7 @@ const DB = {
   },
 };
 
-/* ── OUTFIT TYPE THEMES (for visual generation) ── */
+/* ── OUTFIT TYPE THEMES (fallback CSS visual) ── */
 const THEMES = {
   casual:  { bg: 'linear-gradient(145deg,#e0f2fe,#f0fdf4)', top: '#3b82f6', bottom: '#1d4ed8', shoe: '#93c5fd' },
   work:    { bg: 'linear-gradient(145deg,#f0f9ff,#e0e7ff)', top: '#1e3a5f', bottom: '#374151', shoe: '#6b7280' },
@@ -137,15 +137,64 @@ function detectType(a) {
   return 'default';
 }
 
-/* ── BUILD OUTFIT VISUAL HTML ── */
-function buildOutfitVisual(type, vibes) {
+/* ══════════════════════════════
+   AI IMAGE GENERATION
+   Uses Pollinations.ai — free, no API key
+══════════════════════════════ */
+
+let currentImageUrl = null;
+
+/* Build a detailed fashion prompt from user answers */
+function buildImagePrompt(answers, outfitLabel, pieces) {
+  const gender  = answers.gender  || 'person';
+  const fit     = answers.fit     || 'balanced';
+  const vibes   = (answers.vibes  || []).join(', ') || 'stylish';
+  const colors  = (answers.colors || []).join(', ') || 'neutral';
+  const season  = answers.season  || 'spring';
+  const time    = answers.time    || 'daytime';
+  const body    = answers.body && answers.body !== 'any' ? answers.body : '';
+  const culture = answers.culture && answers.culture !== 'none' ? answers.culture : '';
+
+  // Top 4 outfit pieces for the prompt
+  const pieceNames = pieces.slice(0, 4).map(p => p.name).join(', ');
+
+  const parts = [
+    `fashion photography of a ${gender} model`,
+    body ? `with ${body} body type` : '',
+    `wearing ${pieceNames}`,
+    `${vibes} style, ${fit} fit`,
+    `${colors} color palette`,
+    `${season} season, ${time}`,
+    culture ? `${culture} dress code` : '',
+    `full body shot, studio lighting, high fashion editorial`,
+    `clean white background, professional fashion photo`,
+    `ultra detailed, 8k, photorealistic`,
+  ].filter(Boolean).join(', ');
+
+  return parts;
+}
+
+/* Show loading skeleton */
+function showImageLoading(container) {
+  container.innerHTML = `
+    <div class="r-img-loading">
+      <div class="r-img-shimmer"></div>
+      <div class="r-img-loading-text">
+        <div class="r-img-spinner"></div>
+        <span>Generating your look with AI…</span>
+      </div>
+    </div>`;
+}
+
+/* Show error fallback (CSS mannequin) */
+function showImageFallback(container, type, vibes) {
   const theme = THEMES[type] || THEMES.default;
   const tags  = (vibes || []).slice(0, 2);
-  return `
+  container.innerHTML = `
     <div style="width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:16px">
       <div style="position:absolute;inset:0;background:${theme.bg};opacity:0.95"></div>
       ${tags.length ? `<div style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:4px;z-index:3">
-        ${tags.map(t => `<span style="background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);border-radius:50px;padding:3px 10px;font-size:10px;font-weight:600;color:#4c1d95;box-shadow:0 2px 8px rgba(0,0,0,0.1)">${t}</span>`).join('')}
+        ${tags.map(t => `<span style="background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);border-radius:50px;padding:3px 10px;font-size:10px;font-weight:600;color:#4c1d95">${t}</span>`).join('')}
       </div>` : ''}
       <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px">
         <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.9);box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>
@@ -162,9 +211,121 @@ function buildOutfitVisual(type, vibes) {
           <div style="width:30px;height:11px;border-radius:0 0 6px 6px;background:${theme.shoe};box-shadow:0 3px 8px rgba(0,0,0,0.2)"></div>
         </div>
       </div>
-      <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.3)">AI Generated ✨</div>
+      <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:1px;text-transform:uppercase;white-space:nowrap">Style Preview ✨</div>
     </div>`;
+  document.getElementById('r-img-caption').textContent = 'AI image unavailable — showing style preview';
 }
+
+/* Generate image via Pollinations.ai */
+async function generateOutfitImage(answers, outfitLabel, pieces, type) {
+  const container  = document.getElementById('r-outfit-visual');
+  const caption    = document.getElementById('r-img-caption');
+  const dlBtn      = document.getElementById('r-img-download');
+  const regenBtn   = document.getElementById('r-img-regen');
+
+  currentImageUrl  = null;
+  dlBtn.disabled   = true;
+  regenBtn.disabled = true;
+  showImageLoading(container);
+  caption.textContent = '';
+
+  const prompt = buildImagePrompt(answers, outfitLabel, pieces);
+  // Add a random seed so regenerate gives a different image
+  const seed   = Math.floor(Math.random() * 999999);
+  // Pollinations.ai free image API — no key needed
+  const url    = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=768&seed=${seed}&nologo=true&model=flux`;
+
+  try {
+    await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        container.innerHTML = '';
+        container.style.background = 'none';
+
+        const imgEl = document.createElement('img');
+        imgEl.src   = img.src;
+        imgEl.alt   = outfitLabel;
+        imgEl.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:16px;display:block';
+        container.appendChild(imgEl);
+
+        // Overlay badge
+        const badge = document.createElement('div');
+        badge.style.cssText = 'position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);color:white;font-size:10px;font-weight:600;padding:4px 10px;border-radius:50px;letter-spacing:0.5px';
+        badge.textContent = '✨ AI Generated';
+        container.style.position = 'relative';
+        container.appendChild(badge);
+
+        currentImageUrl = img.src;
+        dlBtn.disabled  = false;
+        caption.textContent = `"${outfitLabel}" — generated by Pollinations AI`;
+        resolve();
+      };
+
+      img.onerror = () => reject(new Error('Image load failed'));
+
+      // Set timeout — Pollinations can be slow
+      const timeout = setTimeout(() => reject(new Error('Timeout')), 30000);
+      img.onload = function() {
+        clearTimeout(timeout);
+        // re-run the onload logic
+        container.innerHTML = '';
+        container.style.background = 'none';
+        const imgEl = document.createElement('img');
+        imgEl.src   = this.src;
+        imgEl.alt   = outfitLabel;
+        imgEl.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:16px;display:block';
+        container.appendChild(imgEl);
+        const badge = document.createElement('div');
+        badge.style.cssText = 'position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);color:white;font-size:10px;font-weight:600;padding:4px 10px;border-radius:50px;letter-spacing:0.5px';
+        badge.textContent = '✨ AI Generated';
+        container.style.position = 'relative';
+        container.appendChild(badge);
+        currentImageUrl = this.src;
+        dlBtn.disabled  = false;
+        caption.textContent = `"${outfitLabel}" — generated by Pollinations AI`;
+        resolve();
+      };
+
+      img.src = url;
+    });
+  } catch (err) {
+    showImageFallback(container, type, answers.vibes);
+    caption.textContent = 'Could not load AI image — showing style preview instead';
+    showToast('AI image timed out — showing style preview', 'error');
+  } finally {
+    regenBtn.disabled = false;
+  }
+}
+
+/* ── DOWNLOAD IMAGE ── */
+document.getElementById('r-img-download')?.addEventListener('click', async () => {
+  if (!currentImageUrl) return;
+  try {
+    const res  = await fetch(currentImageUrl);
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `fitfusion-outfit-${Date.now()}.jpg`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Image downloaded ✓', 'success');
+  } catch {
+    // Fallback: open in new tab
+    window.open(currentImageUrl, '_blank');
+  }
+});
+
+/* ── REGENERATE IMAGE ── */
+document.getElementById('r-img-regen')?.addEventListener('click', () => {
+  if (!lastAnswers) return;
+  const type = lastType || detectType(lastAnswers);
+  const data = DB[type];
+  const label = document.getElementById('r-badge').textContent;
+  generateOutfitImage(lastAnswers, label, data.pieces, type);
+});
 
 /* ══════════════════════════════
    QUESTIONNAIRE
@@ -280,11 +441,8 @@ function showResult(a) {
 
   document.getElementById('r-badge').textContent = label;
 
-  // ── OUTFIT IMAGE VISUAL ──
-  const visualEl = document.getElementById('r-outfit-visual');
-  if (visualEl) {
-    visualEl.innerHTML = buildOutfitVisual(type, a.vibes);
-  }
+  // ── TRIGGER AI IMAGE GENERATION ──
+  generateOutfitImage(a, label, data.pieces, type);
 
   // Confidence score
   const score = calcConfidence(a);
@@ -412,6 +570,7 @@ document.getElementById('r-save').addEventListener('click', () => {
     tips:    data.tips,
     palette: data.palette,
     answers: lastAnswers,
+    imgUrl:  currentImageUrl || null,
     ts:      new Date().toLocaleString(),
     fav:     false,
   };
