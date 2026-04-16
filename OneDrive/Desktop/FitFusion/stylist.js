@@ -217,51 +217,97 @@ const CULTURE_MAP = {
   traditional:  'traditional cultural fashion elements',
 };
 
-/* Build the highest-quality fashion prompt */
+/* Build the highest-quality fashion prompt — uses full piece descriptions */
 function buildImagePrompt(answers, outfitLabel, pieces) {
   const genderDesc  = GENDER_MAP[answers.gender]  || 'fashion model';
   const fitDesc     = FIT_MAP[answers.fit]         || '';
   const vibeDescs   = (answers.vibes  || []).map(v => VIBE_MAP[v]).filter(Boolean).join(', ');
   const colorDescs  = (answers.colors || []).map(c => COLOR_MAP[c]).filter(Boolean).join(', ');
-  const seasonDesc  = SEASON_MAP[answers.season]   || 'studio background';
+  const seasonDesc  = SEASON_MAP[answers.season]   || 'neutral studio background';
   const timeDesc    = TIME_MAP[answers.time]        || 'professional studio lighting';
   const bodyDesc    = answers.body && answers.body !== 'any' ? (BODY_MAP[answers.body] || '') : '';
   const cultureDesc = answers.culture && answers.culture !== 'none' ? (CULTURE_MAP[answers.culture] || '') : '';
 
-  // All outfit pieces as a natural sentence
-  const allPieces = pieces.map(p => `${p.name}`).join(', ');
+  /* ── Build per-piece descriptions using BOTH name + detail ──
+     e.g. "Oversized Linen Tee (relaxed fit, neutral tones)"
+          "Straight-leg Jeans (mid-rise, light wash)"
+          "Satin Slip Top (bias cut, champagne)"
+  */
+  const pieceDescriptions = pieces.map(p => {
+    // Clean the detail: remove "·" separators, lowercase
+    const cleanDetail = p.detail
+      .replace(/·/g, ',')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    return `${p.name} (${cleanDetail})`;
+  }).join(', ');
 
-  // Build structured prompt — order matters for quality
+  /* ── Extract dominant colors from palette details ──
+     e.g. "Champagne or black", "Dusty rose or burgundy"
+  */
+  const pieceColors = pieces
+    .map(p => {
+      // Pull color words from detail field
+      const colorWords = p.detail.match(/(?:black|white|navy|beige|cream|ivory|gold|silver|nude|tan|camel|rose|burgundy|champagne|charcoal|brown|blue|green|red|grey|gray|stone|indigo|mint|coral|lavender|pink|orange|yellow|purple|teal|olive)/gi);
+      return colorWords ? colorWords.join(', ') : null;
+    })
+    .filter(Boolean)
+    .join(', ');
+
+  /* ── Build the final structured prompt ── */
   const positive = [
-    // Subject
-    `professional fashion editorial photo of a ${genderDesc}`,
+    // 1. Subject
+    `professional fashion editorial photograph of a ${genderDesc}`,
     bodyDesc,
-    // Outfit
-    `wearing ${allPieces}`,
+
+    // 2. Exact outfit — name + detail for every piece
+    `wearing: ${pieceDescriptions}`,
+
+    // 3. Fit & silhouette
     fitDesc,
-    // Style
-    vibeDescs,
-    // Colors
-    colorDescs ? `color palette: ${colorDescs}` : '',
-    // Culture/modesty
+
+    // 4. Style aesthetic
+    vibeDescs || '',
+
+    // 5. Color story — from both user palette AND piece details
+    [colorDescs, pieceColors].filter(Boolean).join(', '),
+
+    // 6. Cultural/modesty
     cultureDesc,
-    // Environment & lighting
+
+    // 7. Environment & lighting
     seasonDesc,
     timeDesc,
-    // Technical quality boosters
-    'full body shot showing complete outfit from head to toe',
+
+    // 8. Shot composition
+    'full body shot from head to toe showing complete outfit',
+    'model standing, confident pose, looking at camera',
+
+    // 9. Photography quality
     'Vogue magazine editorial style',
-    'shot on Hasselblad medium format camera',
-    'f/2.8 aperture, shallow depth of field',
-    'perfect skin, sharp focus on clothing details',
+    'shot on Phase One IQ4 150MP medium format camera',
+    'f/2.8 aperture, 85mm lens, shallow depth of field',
+    'sharp focus on clothing texture and fabric details',
+    'perfect lighting, no shadows on face',
     'high fashion lookbook photography',
-    'professional model pose',
-    'ultra-high resolution, 8K, hyperrealistic',
+    'ultra-high resolution, 8K, hyperrealistic, photorealistic',
     'award-winning fashion photography',
+    'clean minimal background',
   ].filter(Boolean).join(', ');
 
-  // Negative prompt to avoid bad outputs
-  const negative = 'ugly, deformed, blurry, low quality, bad anatomy, extra limbs, missing limbs, watermark, text, logo, cartoon, anime, illustration, painting, drawing, sketch, nsfw, nude, explicit';
+  /* ── Negative prompt — everything we don't want ── */
+  const negative = [
+    'ugly', 'deformed', 'disfigured', 'blurry', 'low quality', 'low resolution',
+    'bad anatomy', 'bad proportions', 'extra limbs', 'missing limbs', 'missing fingers',
+    'extra fingers', 'fused fingers', 'mutated hands', 'poorly drawn hands',
+    'watermark', 'text', 'logo', 'signature', 'username',
+    'cartoon', 'anime', 'illustration', 'painting', 'drawing', 'sketch', 'render', 'CGI',
+    'nsfw', 'nude', 'explicit', 'revealing',
+    'cropped', 'cut off', 'out of frame', 'partial body',
+    'duplicate', 'clone', 'multiple people',
+    'overexposed', 'underexposed', 'grainy', 'noise',
+  ].join(', ');
 
   return { positive, negative };
 }
