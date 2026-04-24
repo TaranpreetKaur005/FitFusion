@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFusion – Style Analysis</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="analysis.css">
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="overlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-logo">🔥 FitFusion</span>
+    <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">✕</button>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="index.html" class="sidebar-link"><span class="sl-icon">🏠</span> Home</a>
+    <a href="stylist.html" class="sidebar-link"><span class="sl-icon">✨</span> AI Stylist</a>
+    <a href="wardrobe.html" class="sidebar-link"><span class="sl-icon">👗</span> My Wardrobe</a>
+    <a href="trending.html" class="sidebar-link"><span class="sl-icon">🔥</span> Trending</a>
+    <a href="analysis.html" class="sidebar-link active"><span class="sl-icon">📊</span> Style Analysis</a>
+    <a href="#" class="sidebar-link"><span class="sl-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-promo">
+      <p>Upgrade to <strong>Pro</strong> for unlimited AI outfits</p>
+      <button class="btn-primary sidebar-upgrade">Upgrade ✨</button>
+    </div>
+    <div class="sidebar-auth" id="sidebar-auth">
+      <a href="auth.html" class="sidebar-link"><span class="sl-icon">🔑</span> Sign In</a>
+      <a href="auth.html?tab=signup" class="sidebar-link"><span class="sl-icon">🚀</span> Sign Up</a>
+    </div>
+    <div class="sidebar-user-card" id="sidebar-user-card" style="display:none">
+      <div class="suc-avatar" id="suc-avatar"></div>
+      <div class="suc-info">
+        <div class="suc-name" id="suc-name"></div>
+        <div class="suc-email" id="suc-email"></div>
+      </div>
+      <button class="suc-logout" id="suc-logout">Sign Out</button>
+    </div>
+  </div>
+</aside>
+
+<!-- NAVBAR -->
+<header class="navbar" id="navbar">
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="logo" style="text-decoration:none">🔥 FitFusion</a>
+  </div>
+  <nav class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="stylist.html" class="nav-link">AI Stylist</a>
+    <a href="wardrobe.html" class="nav-link">Wardrobe</a>
+    <a href="trending.html" class="nav-link">Trendy Suggestions</a>
+  </nav>
+  <div class="nav-right">
+    <div id="nav-auth">
+      <a href="auth.html"><button class="btn-outline">Sign In</button></a>
+      <a href="auth.html?tab=signup"><button class="btn-primary">Sign Up</button></a>
+    </div>
+    <div id="nav-user" class="nav-user hidden">
+      <div class="nav-avatar" id="nav-avatar"></div>
+      <div class="nav-user-info">
+        <span class="nav-user-name" id="nav-user-name"></span>
+        <span class="nav-user-email" id="nav-user-email"></span>
+      </div>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="dropdown-header">
+          <div class="drop-avatar" id="drop-avatar"></div>
+          <div>
+            <div class="drop-name" id="drop-name"></div>
+            <div class="drop-email" id="drop-email"></div>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a href="wardrobe.html" class="dropdown-item">👗 My Wardrobe</a>
+        <a href="trending.html" class="dropdown-item">✨ Style Preferences</a>
+        <a href="analysis.html" class="dropdown-item">📊 Style Analysis</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item logout-btn" id="logout-btn">🚪 Sign Out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="an-hero">
+  <div class="an-hero-bg">
+    <div class="an-orb an-o1"></div>
+    <div class="an-orb an-o2"></div>
+  </div>
+  <div class="an-hero-content">
+    <div class="an-badge">📊 AI-Powered Analysis</div>
+    <h1 id="an-greeting">Style Analysis</h1>
+    <p>Upload a photo of your outfit and get instant AI-powered style analysis, improvement suggestions, and a detailed style score.</p>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="an-main">
+
+  <!-- UPLOAD VIEW -->
+  <div class="an-upload-section" id="upload-section">
+    <div class="an-upload-card">
+      <div class="an-upload-icon">📸</div>
+      <h2>Upload Your Outfit Photo</h2>
+      <p>Take a photo or upload an image of your outfit for instant AI analysis</p>
+      
+      <div class="an-upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept="image/*" hidden>
+        <div class="an-upload-placeholder" id="upload-placeholder">
+          <span class="an-upload-emoji">🖼</span>
+          <span class="an-upload-text">Click to upload or drag & drop</span>
+          <span class="an-upload-hint">JPG, PNG, WEBP up to 10MB</span>
+        </div>
+        <div class="an-upload-preview" id="upload-preview" hidden>
+          <img id="preview-img" alt="Uploaded outfit">
+          <button class="an-remove-btn" id="remove-btn">✕ Remove</button>
+        </div>
+      </div>
+
+      <button class="an-analyze-btn" id="analyze-btn" disabled>
+        <span id="analyze-text">🔍 Analyze My Style</span>
+        <span id="analyze-spinner" hidden>
+          <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          Analyzing…
+        </span>
+      </button>
+
+      <div class="an-upload-tips">
+        <h4>📌 Tips for best results:</h4>
+        <ul>
+          <li>Full body shot showing the complete outfit</li>
+          <li>Good lighting, clear photo</li>
+          <li>Plain background preferred</li>
+          <li>Stand straight, face the camera</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT VIEW -->
+  <div class="an-result-section" id="result-section" hidden>
+    
+    <div class="an-result-grid">
+      
+      <!-- LEFT — IMAGE & SCORES -->
+      <div class="an-result-left">
+        <div class="an-result-img-wrap">
+          <img id="result-img" alt="Your outfit">
+        </div>
+        
+        <div class="an-scores-card">
+          <h3>📊 Style Scores</h3>
+          <div class="an-score-item">
+            <div class="an-score-label">Overall Style</div>
+            <div class="an-score-bar">
+              <div class="an-score-fill" id="score-overall" style="width:0%"></div>
+            </div>
+            <div class="an-score-num" id="score-overall-num">0%</div>
+          </div>
+          <div class="an-score-item">
+            <div class="an-score-label">Colour Harmony</div>
+            <div class="an-score-bar">
+              <div class="an-score-fill" id="score-color" style="width:0%"></div>
+            </div>
+            <div class="an-score-num" id="score-color-num">0%</div>
+          </div>
+          <div class="an-score-item">
+            <div class="an-score-label">Fit & Proportion</div>
+            <div class="an-score-bar">
+              <div class="an-score-fill" id="score-fit" style="width:0%"></div>
+            </div>
+            <div class="an-score-num" id="score-fit-num">0%</div>
+          </div>
+          <div class="an-score-item">
+            <div class="an-score-label">Trend Relevance</div>
+            <div class="an-score-bar">
+              <div class="an-score-fill" id="score-trend" style="width:0%"></div>
+            </div>
+            <div class="an-score-num" id="score-trend-num">0%</div>
+          </div>
+        </div>
+
+        <button class="an-new-analysis-btn" id="new-analysis-btn">📸 Analyze Another Outfit</button>
+      </div>
+
+      <!-- RIGHT — ANALYSIS & Q&A -->
+      <div class="an-result-right">
+        
+        <div class="an-analysis-card">
+          <div class="an-verdict" id="verdict">
+            <span class="an-verdict-icon" id="verdict-icon">✨</span>
+            <span class="an-verdict-text" id="verdict-text">Great Style!</span>
+          </div>
+
+          <div class="an-section">
+            <h4>✅ What's Working</h4>
+            <ul id="working-list"></ul>
+          </div>
+
+          <div class="an-section">
+            <h4>💡 Suggestions for Improvement</h4>
+            <ul id="suggestions-list"></ul>
+          </div>
+
+          <div class="an-section">
+            <h4>🎨 Detected Style Elements</h4>
+            <div class="an-tags" id="style-tags"></div>
+          </div>
+        </div>
+
+        <!-- Q&A SECTION -->
+        <div class="an-qa-card">
+          <h3>💬 Ask Me Anything</h3>
+          <p class="an-qa-sub">Have questions about your outfit? Ask away!</p>
+          
+          <div class="an-qa-thread" id="qa-thread">
+            <!-- Messages appear here -->
+          </div>
+
+          <form class="an-qa-input-form" id="qa-form">
+            <input 
+              type="text" 
+              id="qa-input" 
+              placeholder="e.g. What shoes would work better?" 
+              autocomplete="off"
+            >
+            <button type="submit" id="qa-submit">
+              <span id="qa-submit-icon">↑</span>
+              <span id="qa-submit-spinner" hidden>
+                <svg class="spin-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <circle cx="12" cy="12" r="10"/>
+                </svg>
+              </span>
+            </button>
+          </form>
+
+          <div class="an-qa-suggestions">
+            <span class="an-qa-sug-label">Quick questions:</span>
+            <button class="an-qa-sug-btn" data-q="What accessories would complete this look?">Accessories?</button>
+            <button class="an-qa-sug-btn" data-q="Is this appropriate for a formal event?">Formal event?</button>
+            <button class="an-qa-sug-btn" data-q="What colours should I avoid with this outfit?">Colour advice?</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+<script src="analysis.js"></script>
+</body>
+</html>
