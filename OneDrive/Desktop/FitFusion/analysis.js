@@ -267,26 +267,29 @@ function showResult() {
   // Copy image
   document.getElementById('result-img').src = previewImg.src;
 
-  // Verdict
-  const [icon, ...rest] = p.verdict.split(' ');
-  document.getElementById('verdict-icon').textContent = icon;
-  document.getElementById('verdict-text').textContent = rest.join(' ');
+  // Big overlay score
+  document.getElementById('result-big-score').innerHTML = `${p.overall}<span>%</span>`;
 
-  // Scores — animate after a tick
+  // Verdict
+  const parts = p.verdict.split(' ');
+  document.getElementById('verdict-icon').textContent = parts[0];
+  document.getElementById('verdict-text').textContent = parts.slice(1).join(' ');
+
+  // Animate SVG ring gauges after a tick
   setTimeout(() => {
-    animateScore('score-overall', 'score-overall-num', p.overall);
-    animateScore('score-color',   'score-color-num',   p.color);
-    animateScore('score-fit',     'score-fit-num',     p.fit);
-    animateScore('score-trend',   'score-trend-num',   p.trend);
-  }, 100);
+    animateRingGauge('ring-overall', 'gauge-overall-num', p.overall);
+    animateRingGauge('ring-color',   'gauge-color-num',   p.color);
+    animateRingGauge('ring-fit',     'gauge-fit-num',     p.fit);
+    animateRingGauge('ring-trend',   'gauge-trend-num',   p.trend);
+  }, 150);
 
   // What's working
   document.getElementById('working-list').innerHTML = p.working
-    .map((w, i) => `<li style="animation-delay:${i*0.08}s">✅ ${w}</li>`).join('');
+    .map((w, i) => `<li class="working-item" style="animation-delay:${i*0.08}s">${w}</li>`).join('');
 
   // Suggestions
   document.getElementById('suggestions-list').innerHTML = p.suggestions
-    .map((s, i) => `<li style="animation-delay:${i*0.08}s">💡 ${s}</li>`).join('');
+    .map((s, i) => `<li class="suggest-item" style="animation-delay:${i*0.08}s">${s}</li>`).join('');
 
   // Style tags
   document.getElementById('style-tags').innerHTML = p.tags
@@ -311,24 +314,32 @@ Outfit analysis results:
   // Welcome message from AI
   setTimeout(() => {
     addAIMessage(`I've analysed your outfit! Your overall style score is **${p.overall}%** — ${p.verdict.replace(/[^\w\s!]/g, '').trim()}. Ask me anything about your look, or use the quick questions below.`);
-  }, 600);
+  }, 700);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
   showToast('Analysis complete ✨', 'success');
 }
 
-/* ── ANIMATE SCORE BAR ── */
-function animateScore(fillId, numId, target) {
-  const fill = document.getElementById(fillId);
+/* ── ANIMATE SVG RING GAUGE ── */
+function animateRingGauge(ringId, numId, targetPercent) {
+  const ring = document.getElementById(ringId);
   const num  = document.getElementById(numId);
-  fill.style.width = target + '%';
-  // Count up number
+  
+  if (!ring || !num) return;
+
+  // SVG circle: circumference = 2πr = 2π × 30 = 188.5
+  const circumference = 188.5;
+  const offset = circumference - (targetPercent / 100) * circumference;
+  
+  ring.style.strokeDashoffset = offset;
+
+  // Count up the number
   let current = 0;
-  const step  = target / 40;
+  const step  = targetPercent / 50;
   const timer = setInterval(() => {
-    current = Math.min(current + step, target);
+    current = Math.min(current + step, targetPercent);
     num.textContent = Math.round(current) + '%';
-    if (current >= target) clearInterval(timer);
+    if (current >= targetPercent) clearInterval(timer);
   }, 25);
 }
 

@@ -109,17 +109,17 @@
   <!-- UPLOAD VIEW -->
   <div class="an-upload-section" id="upload-section">
     <div class="an-upload-card">
-      <div class="an-upload-icon">📸</div>
-      <h2>Upload Your Outfit Photo</h2>
-      <p>Take a photo or upload an image of your outfit for instant AI analysis</p>
-      
+
       <div class="an-upload-zone" id="upload-zone">
         <input type="file" id="file-input" accept="image/*" hidden>
+
         <div class="an-upload-placeholder" id="upload-placeholder">
-          <span class="an-upload-emoji">🖼</span>
-          <span class="an-upload-text">Click to upload or drag & drop</span>
-          <span class="an-upload-hint">JPG, PNG, WEBP up to 10MB</span>
+          <div class="an-upload-icon-wrap">📸</div>
+          <div class="an-upload-title">Drop your outfit photo here</div>
+          <div class="an-upload-text">or click anywhere to browse files</div>
+          <div class="an-upload-hint">JPG · PNG · WEBP · up to 10MB</div>
         </div>
+
         <div class="an-upload-preview" id="upload-preview" hidden>
           <img id="preview-img" alt="Uploaded outfit">
           <button class="an-remove-btn" id="remove-btn">✕ Remove</button>
@@ -127,114 +127,172 @@
       </div>
 
       <button class="an-analyze-btn" id="analyze-btn" disabled>
-        <span id="analyze-text">🔍 Analyze My Style</span>
+        <span id="analyze-text">✨ Analyze My Style</span>
         <span id="analyze-spinner" hidden>
           <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
           </svg>
-          Analyzing…
+          Analysing your look…
         </span>
       </button>
 
-      <div class="an-upload-tips">
-        <h4>📌 Tips for best results:</h4>
-        <ul>
-          <li>Full body shot showing the complete outfit</li>
-          <li>Good lighting, clear photo</li>
-          <li>Plain background preferred</li>
-          <li>Stand straight, face the camera</li>
-        </ul>
+      <div class="an-tips-row">
+        <div class="an-tip-chip"><span class="an-tip-chip-icon">🧍</span>Full body shot</div>
+        <div class="an-tip-chip"><span class="an-tip-chip-icon">💡</span>Good lighting</div>
+        <div class="an-tip-chip"><span class="an-tip-chip-icon">🖼</span>Plain background</div>
+        <div class="an-tip-chip"><span class="an-tip-chip-icon">📐</span>Face the camera</div>
       </div>
+
     </div>
   </div>
 
   <!-- RESULT VIEW -->
   <div class="an-result-section" id="result-section" hidden>
-    
+
+    <!-- SVG gradient defs (hidden) -->
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <linearGradient id="grad-overall" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#ec4899"/>
+        </linearGradient>
+        <linearGradient id="grad-color" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ec4899"/>
+          <stop offset="100%" stop-color="#f59e0b"/>
+        </linearGradient>
+        <linearGradient id="grad-fit" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6366f1"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+        <linearGradient id="grad-trend" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#10b981"/>
+          <stop offset="100%" stop-color="#6366f1"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
     <div class="an-result-grid">
-      
+
       <!-- LEFT — IMAGE & SCORES -->
       <div class="an-result-left">
+
         <div class="an-result-img-wrap">
           <img id="result-img" alt="Your outfit">
-        </div>
-        
-        <div class="an-scores-card">
-          <h3>📊 Style Scores</h3>
-          <div class="an-score-item">
-            <div class="an-score-label">Overall Style</div>
-            <div class="an-score-bar">
-              <div class="an-score-fill" id="score-overall" style="width:0%"></div>
-            </div>
-            <div class="an-score-num" id="score-overall-num">0%</div>
-          </div>
-          <div class="an-score-item">
-            <div class="an-score-label">Colour Harmony</div>
-            <div class="an-score-bar">
-              <div class="an-score-fill" id="score-color" style="width:0%"></div>
-            </div>
-            <div class="an-score-num" id="score-color-num">0%</div>
-          </div>
-          <div class="an-score-item">
-            <div class="an-score-label">Fit & Proportion</div>
-            <div class="an-score-bar">
-              <div class="an-score-fill" id="score-fit" style="width:0%"></div>
-            </div>
-            <div class="an-score-num" id="score-fit-num">0%</div>
-          </div>
-          <div class="an-score-item">
-            <div class="an-score-label">Trend Relevance</div>
-            <div class="an-score-bar">
-              <div class="an-score-fill" id="score-trend" style="width:0%"></div>
-            </div>
-            <div class="an-score-num" id="score-trend-num">0%</div>
+          <div class="an-result-img-overlay">
+            <span class="an-result-img-label">Overall Score</span>
+            <div class="an-result-img-score" id="result-big-score">—<span>%</span></div>
           </div>
         </div>
 
-        <button class="an-new-analysis-btn" id="new-analysis-btn">📸 Analyze Another Outfit</button>
+        <div class="an-scores-card">
+          <div class="an-scores-header">
+            <h3>📊 Style Breakdown</h3>
+            <span>4 dimensions</span>
+          </div>
+          <div class="an-gauges">
+
+            <div class="an-gauge">
+              <div class="an-gauge-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle class="an-gauge-ring-bg" cx="36" cy="36" r="30"/>
+                  <circle class="an-gauge-ring-fill color-overall" id="ring-overall" cx="36" cy="36" r="30"/>
+                </svg>
+                <div class="an-gauge-num" id="gauge-overall-num">0%</div>
+              </div>
+              <div class="an-gauge-label">Overall<br>Style</div>
+            </div>
+
+            <div class="an-gauge">
+              <div class="an-gauge-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle class="an-gauge-ring-bg" cx="36" cy="36" r="30"/>
+                  <circle class="an-gauge-ring-fill color-color" id="ring-color" cx="36" cy="36" r="30"/>
+                </svg>
+                <div class="an-gauge-num" id="gauge-color-num">0%</div>
+              </div>
+              <div class="an-gauge-label">Colour<br>Harmony</div>
+            </div>
+
+            <div class="an-gauge">
+              <div class="an-gauge-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle class="an-gauge-ring-bg" cx="36" cy="36" r="30"/>
+                  <circle class="an-gauge-ring-fill color-fit" id="ring-fit" cx="36" cy="36" r="30"/>
+                </svg>
+                <div class="an-gauge-num" id="gauge-fit-num">0%</div>
+              </div>
+              <div class="an-gauge-label">Fit &amp;<br>Proportion</div>
+            </div>
+
+            <div class="an-gauge">
+              <div class="an-gauge-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle class="an-gauge-ring-bg" cx="36" cy="36" r="30"/>
+                  <circle class="an-gauge-ring-fill color-trend" id="ring-trend" cx="36" cy="36" r="30"/>
+                </svg>
+                <div class="an-gauge-num" id="gauge-trend-num">0%</div>
+              </div>
+              <div class="an-gauge-label">Trend<br>Relevance</div>
+            </div>
+
+          </div>
+        </div>
+
+        <button class="an-new-analysis-btn" id="new-analysis-btn">📸 Analyse Another Outfit</button>
       </div>
 
       <!-- RIGHT — ANALYSIS & Q&A -->
       <div class="an-result-right">
-        
-        <div class="an-analysis-card">
-          <div class="an-verdict" id="verdict">
-            <span class="an-verdict-icon" id="verdict-icon">✨</span>
-            <span class="an-verdict-text" id="verdict-text">Great Style!</span>
-          </div>
 
+        <!-- VERDICT BANNER -->
+        <div class="an-verdict-banner">
+          <span class="an-verdict-icon" id="verdict-icon">✨</span>
+          <div class="an-verdict-body">
+            <div class="an-verdict-label">AI Verdict</div>
+            <div class="an-verdict-text" id="verdict-text">Great Style!</div>
+          </div>
+        </div>
+
+        <div class="an-analysis-card">
           <div class="an-section">
-            <h4>✅ What's Working</h4>
+            <div class="an-section-header">
+              <div class="an-section-icon green">✅</div>
+              <h4>What's Working</h4>
+            </div>
             <ul id="working-list"></ul>
           </div>
 
           <div class="an-section">
-            <h4>💡 Suggestions for Improvement</h4>
+            <div class="an-section-header">
+              <div class="an-section-icon amber">💡</div>
+              <h4>Suggestions for Improvement</h4>
+            </div>
             <ul id="suggestions-list"></ul>
           </div>
 
           <div class="an-section">
-            <h4>🎨 Detected Style Elements</h4>
+            <div class="an-section-header">
+              <div class="an-section-icon purple">🎨</div>
+              <h4>Detected Style Elements</h4>
+            </div>
             <div class="an-tags" id="style-tags"></div>
           </div>
         </div>
 
-        <!-- Q&A SECTION -->
+        <!-- Q&A -->
         <div class="an-qa-card">
-          <h3>💬 Ask Me Anything</h3>
-          <p class="an-qa-sub">Have questions about your outfit? Ask away!</p>
-          
-          <div class="an-qa-thread" id="qa-thread">
-            <!-- Messages appear here -->
+          <div class="an-qa-header">
+            <div class="an-qa-header-icon">💬</div>
+            <div>
+              <h3>Ask Me Anything</h3>
+              <p class="an-qa-sub">Have questions about your outfit? Ask away!</p>
+            </div>
           </div>
 
+          <div class="an-qa-thread" id="qa-thread"></div>
+
           <form class="an-qa-input-form" id="qa-form">
-            <input 
-              type="text" 
-              id="qa-input" 
-              placeholder="e.g. What shoes would work better?" 
-              autocomplete="off"
-            >
+            <input type="text" id="qa-input" placeholder="e.g. What shoes would work better?" autocomplete="off">
             <button type="submit" id="qa-submit">
               <span id="qa-submit-icon">↑</span>
               <span id="qa-submit-spinner" hidden>
@@ -246,17 +304,16 @@
           </form>
 
           <div class="an-qa-suggestions">
-            <span class="an-qa-sug-label">Quick questions:</span>
+            <span class="an-qa-sug-label">Quick:</span>
             <button class="an-qa-sug-btn" data-q="What accessories would complete this look?">Accessories?</button>
             <button class="an-qa-sug-btn" data-q="Is this appropriate for a formal event?">Formal event?</button>
             <button class="an-qa-sug-btn" data-q="What colours should I avoid with this outfit?">Colour advice?</button>
+            <button class="an-qa-sug-btn" data-q="How can I improve the fit?">Improve fit?</button>
           </div>
         </div>
 
       </div>
-
     </div>
-
   </div>
 
 </main>
