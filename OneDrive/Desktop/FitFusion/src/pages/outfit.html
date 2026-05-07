@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFusion – Style Profile</title>
+  <link rel="stylesheet" href="../styles/styles.css">
+  <link rel="stylesheet" href="../styles/outfit.css">
+</head>
+<body class="outfit-page">
+
+<div class="questionnaire-container">
+  <!-- HEADER -->
+  <header class="questionnaire-header">
+    <div class="header-content">
+      <a href="index.html" class="logo">FitFusion</a>
+      <div class="progress-indicator">
+        <span class="progress-text">Step <span id="current-step">1</span> of <span id="total-steps">6</span></span>
+        <div class="progress-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="questionnaire-main">
+    
+    <!-- STEP 1 — PERSONAL INFO -->
+    <div class="question-step active" data-step="1">
+      <div class="step-header">
+        <h1 class="step-title">Tell us about yourself</h1>
+        <p class="step-subtitle">This helps us personalize your style recommendations</p>
+      </div>
+      
+      <div class="question-grid">
+        <div class="question-group">
+          <label class="question-label">I identify as</label>
+          <div class="option-group">
+            <label class="radio-option">
+              <input type="radio" name="gender" value="women">
+              <span class="radio-custom"></span>
+              <span class="option-text">Woman</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gender" value="men">
+              <span class="radio-custom"></span>
+              <span class="option-text">Man</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gender" value="non-binary">
+              <span class="radio-custom"></span>
+              <span class="option-text">Non-binary</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gender" value="prefer-not">
+              <span class="radio-custom"></span>
+              <span class="option-text">Prefer not to say</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="question-group">
+          <label class="question-label">Age range</label>
+          <div class="option-group">
+            <label class="radio-option">
+              <input type="radio" name="age" value="18-25">
+              <span class="radio-custom"></span>
+              <span class="option-text">18-25</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="age" value="26-35">
+              <span class="radio-custom"></span>
+              <span class="option-text">26-35</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="age" value="36-45">
+              <span class="radio-custom"></span>
+              <span class="option-text">36-45</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="age" value="46+">
+              <span class="radio-custom"></span>
+              <span class="option-text">46+</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 — LIFESTYLE & OCCASIONS -->
+    <div class="question-step" data-step="2">
+      <div class="step-header">
+        <h1 class="step-title">Your lifestyle & occasions</h1>
+        <p class="step-subtitle">What kind of outfits do you need most?</p>
+      </div>
+      
+      <div class="question-grid">
+        <div class="question-group">
+          <label class="question-label">Primary occasions</label>
+          <div class="option-group multi-select">
+            <label class="checkbox-option">
+              <input type="checkbox" name="occasion" value="work">
+              <span class="checkbox-custom"></span>
+              <div class="option-content">
+                <span class="option-text">Work & Office</span>
+                <span class="option-desc">Professional, business casual</span>
+              </div>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="occasion" value="casual">
+              <span class="checkbox-custom"></span>
+              <div class="option-content">
+                <span class="option-text">Casual Daily</span>
+                <span class="option-desc">Everyday comfort, errands</span>
+              </div>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="occasion" value="social">
+              <span class="checkbox-custom"></span>
+              <div class="option-content">
+                <span class="option-text">Social Events</span>
+                <span class="option-desc">Dinners, gatherings, dates</span>
+              </div>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="occasion" value="active">
+              <span class="checkbox-custom"></span>
+              <div class="option-content">
+                <span class="option-text">Active & Sport</span>
+                <span class="option-desc">Gym, outdoor activities</span>
+              </div>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="occasion" value="formal">
+              <span class="checkbox-custom"></span>
+              <div class="option-content">
+                <span class="option-text">Formal Events</span>
+                <span class="option-desc">Weddings, galas, special occasions</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <div class="question-group">
+          <label class="question-label">Work environment</label>
+          <div class="option-group">
+            <label class="radio-option">
+              <input type="radio" name="work-type" value="corporate">
+              <span class="radio-custom"></span>
+              <span class="option-text">Corporate office</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="work-type" value="creative">
+              <span class="radio-custom"></span>
+              <span class="option-text">Creative field</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="work-type" value="remote">
+              <span class="radio-custom"></span>
+              <span class="option-text">Remote work</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="work-type" value="casual">
+              <span class="radio-custom"></span>
+              <span class="option-text">Casual workplace</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 — STYLE PREFERENCES -->
+    <div class="question-step" data-step="3">
+      <div class="step-header">
+        <h1 class="step-title">Your style preferences</h1>
+        <p class="step-subtitle">Select up to 3 styles that resonate with you</p>
+      </div>
+      
+      <div class="style-grid">
+        <label class="style-card">
+          <input type="checkbox" name="style" value="minimal">
+          <div class="style-card-inner">
+            <div class="style-icon">⚪</div>
+            <div class="style-info">
+              <span class="style-name">Minimalist</span>
+              <span class="style-desc">Clean lines, neutral colors</span>
+            </div>
+          </div>
+        </label>
+        
+        <label class="style-card">
+          <input type="checkbox" name="style" value="classic">
+          <div class="style-card-inner">
+            <div class="style-icon">🎯</div>
+            <div class="style-info">
+              <span class="style-name">Classic</span>
+              <span class="style-desc">Timeless, elegant pieces</span>
+            </div>
+          </div>
+        </label>
+        
+        <label class="style-card">
+          <input type="checkbox" name="style" value="trendy">
+          <div class="style-card-inner">
+            <div class="style-icon">🔥</div>
+            <div class="style-info">
+              <span class="style-name">Trendy</span>
+              <span class="style-desc">Latest fashion trends</span>
+            </div>
+          </div>
+        </label>
+        
+        <label class="style-card">
+          <input type="checkbox" name="style" value="casual">
+          <div class="style-card-inner">
+            <div class="style-icon">🌿</div>
+            <div class="style-info">
+              <span class="style-name">Casual</span>
+              <span class="style-desc">Comfortable, relaxed</span>
+            </div>
+          </div>
+        </label>
+        
+        <label class="style-card">
+          <input type="checkbox" name="style" value="edgy">
+          <div class="style-card-inner">
+            <div class="style-icon">⚡</div>
+            <div class="style-info">
+              <span class="style-name">Edgy</span>
+              <span class="style-desc">Bold, statement pieces</span>
+            </div>
+          </div>
+        </label>
+        
+        <label class="style-card">
+          <input type="checkbox" name="style" value="vintage">
+          <div class="style-card-inner">
+            <div class="style-icon">📻</div>
+            <div class="style-info">
+              <span class="style-name">Vintage</span>
+              <span class="style-desc">Retro, nostalgic styles</span>
+            </div>
+          </div>
+        </label>
+        
+        <label class="style-card">
+          <input type="checkbox" name="style" value="sporty">
+          <div class="style-card-inner">
+            <div class="style-icon">🏃</div>
+            <div class="style-info">
+              <span class="style-name">Sporty</span>
+              <span class="style-desc">Athletic, active wear</span>
+            </div>
+          </div>
+        </label>
+        
+        <label class="style-card">
+          <input type="checkbox" name="style" value="elegant">
+          <div class="style-card-inner">
+            <div class="style-icon">✨</div>
+            <div class="style-info">
+              <span class="style-name">Elegant</span>
+              <span class="style-desc">Sophisticated, refined</span>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 4 — COLOR PREFERENCES -->
+    <div class="question-step" data-step="4">
+      <div class="step-header">
+        <h1 class="step-title">Your color preferences</h1>
+        <p class="step-subtitle">Select all color families you enjoy wearing</p>
+      </div>
+      
+      <div class="color-selection-grid">
+        <label class="color-option">
+          <input type="checkbox" name="colors" value="neutrals">
+          <div class="color-preview" style="background: linear-gradient(135deg, #f8f9fa, #6c757d)"></div>
+          <div class="color-info">
+            <span class="color-name">Neutrals</span>
+            <span class="color-desc">Beige, gray, white, black</span>
+          </div>
+        </label>
+        
+        <label class="color-option">
+          <input type="checkbox" name="colors" value="earth">
+          <div class="color-preview" style="background: linear-gradient(135deg, #d4a574, #8b7355)"></div>
+          <div class="color-info">
+            <span class="color-name">Earth Tones</span>
+            <span class="color-desc">Brown, tan, olive, rust</span>
+          </div>
+        </label>
+        
+        <label class="color-option">
+          <input type="checkbox" name="colors" value="pastels">
+          <div class="color-preview" style="background: linear-gradient(135deg, #ffd6e7, #c3e8ff)"></div>
+          <div class="color-info">
+            <span class="color-name">Pastels</span>
+            <span class="color-desc">Soft pink, baby blue, mint</span>
+          </div>
+        </label>
+        
+        <label class="color-option">
+          <input type="checkbox" name="colors" value="bold">
+          <div class="color-preview" style="background: linear-gradient(135deg, #ff6b6b, #4ecdc4)"></div>
+          <div class="color-info">
+            <span class="color-name">Bold & Bright</span>
+            <span class="color-desc">Vibrant red, yellow, orange</span>
+          </div>
+        </label>
+        
+        <label class="color-option">
+          <input type="checkbox" name="colors" value="jewel">
+          <div class="color-preview" style="background: linear-gradient(135deg, #6f42c1, #0ea5e9)"></div>
+          <div class="color-info">
+            <span class="color-name">Jewel Tones</span>
+            <span class="color-desc">Emerald, sapphire, amethyst</span>
+          </div>
+        </label>
+        
+        <label class="color-option">
+          <input type="checkbox" name="colors" value="monochrome">
+          <div class="color-preview" style="background: linear-gradient(135deg, #212529, #6c757d)"></div>
+          <div class="color-info">
+            <span class="color-name">Monochrome</span>
+            <span class="color-desc">Black, white, gray only</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 5 — BUDGET & SHOPPING -->
+    <div class="question-step" data-step="5">
+      <div class="step-header">
+        <h1 class="step-title">Budget & shopping preferences</h1>
+        <p class="step-subtitle">Help us find options within your price range</p>
+      </div>
+      
+      <div class="question-grid">
+        <div class="question-group">
+          <label class="question-label">Budget range per outfit piece</label>
+          <div class="budget-options">
+            <label class="budget-option">
+              <input type="radio" name="budget" value="budget">
+              <div class="budget-card">
+                <div class="budget-icon">💰</div>
+                <div class="budget-details">
+                  <span class="budget-label">Budget-Friendly</span>
+                  <span class="budget-range">Under $50</span>
+                </div>
+              </div>
+            </label>
+            
+            <label class="budget-option">
+              <input type="radio" name="budget" value="mid">
+              <div class="budget-card">
+                <div class="budget-icon">💳</div>
+                <div class="budget-details">
+                  <span class="budget-label">Mid-Range</span>
+                  <span class="budget-range">$50 - $150</span>
+                </div>
+              </div>
+            </label>
+            
+            <label class="budget-option">
+              <input type="radio" name="budget" value="premium">
+              <div class="budget-card">
+                <div class="budget-icon">✨</div>
+                <div class="budget-details">
+                  <span class="budget-label">Premium</span>
+                  <span class="budget-range">$150 - $300</span>
+                </div>
+              </div>
+            </label>
+            
+            <label class="budget-option">
+              <input type="radio" name="budget" value="luxury">
+              <div class="budget-card">
+                <div class="budget-icon">💎</div>
+                <div class="budget-details">
+                  <span class="budget-label">Luxury</span>
+                  <span class="budget-range">$300+</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <div class="question-group">
+          <label class="question-label">Shopping preferences</label>
+          <div class="option-group">
+            <label class="checkbox-option">
+              <input type="checkbox" name="shopping" value="sustainable">
+              <span class="checkbox-custom"></span>
+              <span class="option-text">Sustainable brands</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="shopping" value="local">
+              <span class="checkbox-custom"></span>
+              <span class="option-text">Local businesses</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="shopping" value="online">
+              <span class="checkbox-custom"></span>
+              <span class="option-text">Online shopping</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="shopping" value="thrift">
+              <span class="checkbox-custom"></span>
+              <span class="option-text">Thrift/secondhand</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6 — ADDITIONAL PREFERENCES -->
+    <div class="question-step" data-step="6">
+      <div class="step-header">
+        <h1 class="step-title">Additional preferences</h1>
+        <p class="step-subtitle">Tell us anything else that helps us style you better</p>
+      </div>
+      
+      <div class="preferences-section">
+        <div class="preference-group">
+          <label class="preference-label">Fit preferences</label>
+          <div class="option-group">
+            <label class="radio-option">
+              <input type="radio" name="fit" value="relaxed">
+              <span class="radio-custom"></span>
+              <span class="option-text">Relaxed/oversized</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fit" value="regular">
+              <span class="radio-custom"></span>
+              <span class="option-text">Regular fit</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fit" value="fitted">
+              <span class="radio-custom"></span>
+              <span class="option-text">Fitted/tailored</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="preference-group">
+          <label class="preference-label">Anything else we should know?</label>
+          <textarea id="additional-notes" placeholder="e.g., I prefer natural fabrics, love layering, avoid certain colors, have specific brand preferences..." rows="4"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- NAVIGATION -->
+  <div class="questionnaire-nav">
+    <button class="nav-btn secondary" id="back-btn">Back</button>
+    <button class="nav-btn primary" id="next-btn">Continue</button>
+  </div>
+
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<script src="../scripts/outfit.js"></script>
+</body>
+</html>
+

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitFusion – Trendy Suggestions</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="trending.css">
+  <title>FitFusion – FAQ</title>
+  <link rel="stylesheet" href="../styles/../styles/styles.css">
+  <link rel="stylesheet" href="../styles/faq.css">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
     <a href="index.html" class="sidebar-link"><span class="sl-icon">🏠</span> Home</a>
     <a href="stylist.html" class="sidebar-link"><span class="sl-icon">✨</span> AI Stylist</a>
     <a href="wardrobe.html" class="sidebar-link"><span class="sl-icon">👗</span> My Wardrobe</a>
-    <a href="trending.html" class="sidebar-link active"><span class="sl-icon">🔥</span> Trending</a>
+    <a href="trending.html" class="sidebar-link"><span class="sl-icon">🔥</span> Trending</a>
     <a href="analysis.html" class="sidebar-link"><span class="sl-icon">📊</span> Style Analysis</a>
     <a href="faq.html" class="sidebar-link"><span class="sl-icon">❓</span> FAQ</a>
   </nav>
@@ -58,7 +58,7 @@
     <a href="index.html" class="nav-link">Home</a>
     <a href="stylist.html" class="nav-link">AI Stylist</a>
     <a href="wardrobe.html" class="nav-link">Wardrobe</a>
-    <a href="trending.html" class="nav-link nav-link-active">Trendy Suggestions</a>
+    <a href="trending.html" class="nav-link">Trendy Suggestions</a>
   </nav>
   <div class="nav-right">
     <div id="nav-auth">
@@ -90,81 +90,94 @@
   </div>
 </header>
 
-<!-- HERO BANNER -->
-<section class="tr-hero">
-  <div class="tr-hero-bg">
-    <div class="tr-orb tr-o1"></div>
-    <div class="tr-orb tr-o2"></div>
+<!-- FAQ HERO -->
+<section class="faq-hero">
+  <div class="faq-hero-bg">
+    <div class="faq-orb faq-o1"></div>
+    <div class="faq-orb faq-o2"></div>
   </div>
-  <div class="tr-hero-content">
-    <div class="tr-hero-badge">🔥 Updated Weekly</div>
-    <h1>What's Trendy Right Now</h1>
-    <p>Curated style picks, colour stories and outfit formulas the fashion world is obsessing over this season.</p>
+  <div class="faq-hero-content">
+    <div class="faq-badge">❓ Help Centre</div>
+    <h1>Frequently Asked Questions</h1>
+    <p>Find quick answers to common questions about FitFusion AI</p>
+    <div class="faq-search-wrap">
+      <span>🔍</span>
+      <input type="text" id="faq-search" placeholder="Search questions…" aria-label="Search FAQ">
+    </div>
   </div>
 </section>
 
-<!-- FILTER TABS -->
-<div class="tr-filters" id="tr-filters">
-  <button class="tr-filter active" data-cat="all">All</button>
-  <button class="tr-filter" data-cat="streetwear">Streetwear</button>
-  <button class="tr-filter" data-cat="minimal">Minimal</button>
-  <button class="tr-filter" data-cat="luxe">Luxe</button>
-  <button class="tr-filter" data-cat="boho">Boho</button>
-  <button class="tr-filter" data-cat="sport">Sport</button>
-  <button class="tr-filter" data-cat="formal">Formal</button>
+<!-- FAQ MAIN -->
+<main class="faq-main" id="faq-main">
+  <!-- Populated by faq.js -->
+</main>
+
+<!-- NO RESULTS -->
+<div class="faq-no-results" id="faq-no-results">
+  <div class="faq-no-results-icon">🔍</div>
+  <h3>No results found</h3>
+  <p>Try a different search term or browse the categories above.</p>
 </div>
 
-<!-- TRENDING GRID -->
-<main class="tr-main">
-
-  <!-- FEATURED CARD (wide) -->
-  <div class="tr-featured" id="tr-featured">
-    <div class="tr-feat-img">
-      <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=900&q=80" alt="Featured trend">
-      <div class="tr-feat-overlay"></div>
-    </div>
-    <div class="tr-feat-content">
-      <span class="tr-feat-tag">✦ Editor's Pick</span>
-      <h2>The Quiet Luxury Wave</h2>
-      <p>Understated elegance is dominating runways and streets alike. Think cashmere neutrals, clean silhouettes and investment pieces that whisper rather than shout.</p>
-      <div class="tr-feat-pills">
-        <span class="tr-pill">Beige</span>
-        <span class="tr-pill">Camel</span>
-        <span class="tr-pill">Ivory</span>
-        <span class="tr-pill">Minimal</span>
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <h2>🔥 FitFusion</h2>
+      <p>Transform your style with AI-powered outfit recommendations, style analysis, and personalized fashion insights. 100% free.</p>
+      <div class="footer-socials">
+        <a href="https://github.com/TaranpreetKaur005/FitFusion" target="_blank" class="footer-social-btn" title="GitHub">🐱</a>
+        <a href="#" class="footer-social-btn" title="LinkedIn">💼</a>
+        <a href="#" class="footer-social-btn" title="Twitter">🐦</a>
+        <a href="#" class="footer-social-btn" title="Instagram">📷</a>
       </div>
-      <button class="tr-feat-btn" onclick="window.location.href='stylist.html'">Style Me This Way →</button>
+    </div>
+    <div class="footer-links">
+      <div>
+        <h4>Product</h4>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#how-it-works">How it Works</a>
+        <a href="stylist.html">Create Outfit</a>
+        <a href="wardrobe.html">My Wardrobe</a>
+        <a href="analysis.html">Style Analysis</a>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <a href="trending.html">Trendy Suggestions</a>
+        <a href="stylist.html">AI Stylist</a>
+        <a href="wardrobe.html">Saved Looks</a>
+        <a href="auth.html">Sign In</a>
+        <a href="auth.html?tab=signup">Sign Up Free</a>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <a href="contact.html">Contact Us</a>
+        <a href="faq.html">FAQ</a>
+        <a href="contact.html">Report a Bug</a>
+        <a href="contact.html">Feature Request</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="faq.html">Privacy Policy</a>
+        <a href="faq.html">Terms of Service</a>
+        <a href="contact.html">Cookie Policy</a>
+      </div>
     </div>
   </div>
-
-  <!-- TREND CARDS GRID -->
-  <div class="tr-grid" id="tr-grid"></div>
-
-  <!-- COLOUR STORIES -->
-  <section class="tr-colors-section">
-    <h2 class="tr-section-title">🎨 Colour Stories of the Season</h2>
-    <div class="tr-color-stories" id="tr-color-stories"></div>
-  </section>
-
-  <!-- OUTFIT FORMULAS -->
-  <section class="tr-formulas-section">
-    <h2 class="tr-section-title">⚡ Outfit Formulas That Always Work</h2>
-    <div class="tr-formulas" id="tr-formulas"></div>
-  </section>
-
-  <!-- STYLE TIPS TICKER -->
-  <section class="tr-ticker-section">
-    <h2 class="tr-section-title">💡 Quick Style Tips</h2>
-    <div class="tr-tips-grid" id="tr-tips-grid"></div>
-  </section>
-
-</main>
+  <div class="footer-bottom">
+    <p>© 2026 FitFusion. Built with ❤️ for fashion lovers.</p>
+    <div class="footer-bottom-links">
+      <a href="faq.html">Privacy</a>
+      <a href="faq.html">Terms</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+</footer>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script src="script.js"></script>
-<script src="trending.js"></script>
+<script src="../scripts/../scripts/script.js"></script>
+<script src="../scripts/faq.js"></script>
 </body>
 </html>
-
