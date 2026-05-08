@@ -1,4 +1,4 @@
-const API        = 'http://localhost:3001/api';
+const API        = 'http://localhost:3002/api';
 const TOTAL_STEPS = 5;
 let currentStep   = 1;
 

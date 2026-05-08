@@ -110,7 +110,7 @@ Respond naturally as a fashion expert would in a consultation.
       ];
 
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4',
+        model: this.model,
         messages: messages,
         max_tokens: 500,
         temperature: 0.7

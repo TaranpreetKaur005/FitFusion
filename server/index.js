@@ -1,4 +1,5 @@
 require('dotenv').config();
+const axios = require('axios');
 const express = require('express');
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
@@ -11,7 +12,7 @@ const OpenAIAPI = require('./api/openai');
 const HuggingFaceAPI = require('./api/huggingface');
 
 const app    = express();
-const PORT   = process.env.PORT || 3001;
+const PORT   = process.env.PORT || 3002;
 const SECRET = process.env.JWT_SECRET || 'fitfusion_jwt_secret_change_in_production';
 
 // Initialize AI APIs
@@ -433,6 +434,33 @@ app.post('/api/generate-moodboard', async (req, res) => {
     console.error('Moodboard generation error:', error);
     res.status(500).json({ error: error.message || 'Failed to generate moodboard.' });
   }
+});
+
+/* ── GET /api/generate-image — Proxy Pollinations to bypass 403 ── */
+app.get('/api/generate-image', async (req, res) => {
+  const { prompt, negative, seed } = req.query;
+  if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+  const models = ['flux', 'turbo'];
+  for (const model of models) {
+    try {
+      // Build internal URL — 768x1024 portrait, enhanced, no logo
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
+                  `?width=768&height=1024&seed=${seed || 42}&model=${model}` +
+                  `&nologo=true&enhance=true&negative=${encodeURIComponent(negative || '')}`;
+      
+      const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
+      
+      res.set('Content-Type', 'image/jpeg');
+      res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24h
+      return res.send(response.data);
+    } catch (error) {
+      console.error(`❌ Pollinations [${model}] failed:`, error.message);
+      // If flux fails, the loop continues to turbo. If turbo fails, we throw.
+    }
+  }
+  
+  res.status(502).json({ error: "Image generation failed" });
 });
 
 /* ── GET /api/health ── */

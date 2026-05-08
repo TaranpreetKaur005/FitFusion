@@ -5,7 +5,7 @@
    localStorage auth so the site works fully.
 ══════════════════════════════ */
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const API = IS_LOCAL ? 'http://localhost:3001/api' : null;
+const API = IS_LOCAL ? 'http://localhost:3002/api' : null;
 
 /* ─────────────────────────────────────────
    GOOGLE SIGN-IN

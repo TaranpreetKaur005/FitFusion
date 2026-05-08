@@ -419,11 +419,9 @@ async function generateOutfitImage(answers, outfitLabel, pieces, type) {
   const { positive, negative } = buildImagePrompt(answers, outfitLabel, pieces);
   const seed = Math.floor(Math.random() * 9999999);
 
-  // Pollinations.ai — flux model, 768×1024 portrait, enhanced
+  // Use backend proxy to bypass browser 403 Forbidden errors
   const buildUrl = (s) =>
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(positive)}` +
-    `?width=768&height=1024&seed=${s}&model=flux&enhance=true&nologo=true` +
-    `&negative=${encodeURIComponent(negative)}`;
+    `http://localhost:3002/api/generate-image?prompt=${encodeURIComponent(positive)}&negative=${encodeURIComponent(negative)}&seed=${s}`;
 
   let succeeded = false;
 

@@ -6,7 +6,7 @@ class GeminiAPI {
       throw new Error('Gemini API key is required');
     }
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    this.modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
     this.model = this.genAI.getGenerativeModel({ model: this.modelName });
   }
 
