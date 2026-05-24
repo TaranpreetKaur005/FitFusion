@@ -1,6 +1,9 @@
-const API        = 'http://localhost:3002/api';
+const API        = window.API_BASE_URL || (location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? 'http://localhost:3002/api'
+  : '/api');
 const TOTAL_STEPS = 5;
 let currentStep   = 1;
+let user          = null;
 
 const progressFill  = document.getElementById('progress-fill');
 const progressLabel = document.getElementById('progress-label');
@@ -9,11 +12,19 @@ const nextBtn       = document.getElementById('next-btn');
 const toastEl       = document.getElementById('toast');
 
 /* ── GREETING with user name ── */
-const user = JSON.parse(localStorage.getItem('ff_user') || '{}');
-if (user.first_name) {
-  document.getElementById('greeting-text').textContent =
-    `Hey ${user.first_name}, let's build your style profile ✨`;
-}
+window.userReady.then(() => {
+  user = window.currentUser;
+  if (!user) {
+    sessionStorage.setItem('ff_return', 'outfit.html');
+    window.location.href = 'auth.html';
+    return;
+  }
+
+  if (user.first_name) {
+    const greeting = document.getElementById('greeting-text');
+    if (greeting) greeting.textContent = `Hey ${user.first_name}, let's build your style profile ✨`;
+  }
+});
 
 /* ── TOAST ── */
 let toastTimer;
@@ -104,11 +115,12 @@ nextBtn.addEventListener('click', async () => {
   try {
     const res  = await fetch(`${API}/outfit`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_id:  user.id || null,
-        gender, occasion,
-        style:    styles.join(','),
+        gender,
+        occasion,
+        style: styles.join(','),
         colors,
         budget,
         extras

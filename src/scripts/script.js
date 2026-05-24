@@ -29,14 +29,38 @@ window.addEventListener('scroll', () => {
 
 /* ══════════════════════════════
    AUTH STATE  (shared across all pages)
-══════════════════════════════ */
+══════════════════════════════ */window.API_BASE_URL = window.API_BASE_URL || (
+  location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+    ? `${location.protocol}//${location.hostname}:3002/api`
+    : '/api'
+);
+
+window.currentUser = null;
+window.userReady = null;
+
+async function fetchCurrentUser() {
+  if (window.currentUser !== null) return window.currentUser;
+  try {
+    const res = await fetch(`${window.API_BASE_URL}/me`, {
+      credentials: 'include',
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    window.currentUser = data.user || null;
+  } catch {
+    window.currentUser = null;
+  }
+  return window.currentUser;
+}
+
+window.getCurrentUser = fetchCurrentUser;
+window.userReady = fetchCurrentUser();
 function getInitials(first, last) {
   return ((first?.[0] || '') + (last?.[0] || '')).toUpperCase();
 }
 
 function applyAuthState() {
-  const raw  = localStorage.getItem('ff_user');
-  const user = raw ? JSON.parse(raw) : null;
+  const user = window.currentUser;
 
   const navAuth  = document.getElementById('nav-auth');
   const navUser  = document.getElementById('nav-user');
@@ -95,9 +119,16 @@ if (navUserEl && userDropdown) {
 }
 
 /* ── SIGN OUT ── */
-function signOut() {
-  localStorage.removeItem('ff_token');
-  localStorage.removeItem('ff_user');
+async function signOut() {
+  try {
+    await fetch(`${window.API_BASE_URL}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (err) {
+    console.warn('Logout request failed:', err);
+  }
+  window.currentUser = null;
   applyAuthState();
   userDropdown?.classList.remove('open');
   closeSidebar();
@@ -107,7 +138,7 @@ document.getElementById('logout-btn')?.addEventListener('click', signOut);
 document.getElementById('suc-logout')?.addEventListener('click', signOut);
 
 /* ── INIT ── */
-applyAuthState();
+window.userReady.then(applyAuthState);
 
 /* ══════════════════════════════
    AUTH GATE  — shared across all pages
@@ -158,16 +189,16 @@ applyAuthState();
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGate(); });
 
   // Expose globally
-  window.requireAuth = function(cb) {
-    const user = localStorage.getItem('ff_user');
+  window.requireAuth = async function(cb) {
+    const user = await fetchCurrentUser();
     if (user) { cb && cb(); return; }
     openGate(cb);
   };
 
   // ── Intercept AI Stylist nav links (index.html + any page) ──
   document.querySelectorAll('a[href="stylist.html"]').forEach(link => {
-    link.addEventListener('click', e => {
-      const user = localStorage.getItem('ff_user');
+    link.addEventListener('click', async e => {
+      const user = await fetchCurrentUser();
       if (!user) {
         e.preventDefault();
         openGate(() => { window.location.href = 'stylist.html'; });

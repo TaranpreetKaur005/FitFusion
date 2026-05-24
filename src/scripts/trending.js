@@ -192,15 +192,16 @@ const TIPS = [
 
 /* ── NAVIGATE TO STYLIST WITH PRE-FILLED ANSWERS ── */
 function tryThisLook(prefill) {
-  // Auth gate
-  if (!localStorage.getItem('ff_user')) {
-    sessionStorage.setItem('ff_return', 'stylist.html');
+  window.userReady.then(user => {
+    if (!user) {
+      sessionStorage.setItem('ff_return', 'stylist.html');
+      sessionStorage.setItem('ff_prefill', JSON.stringify(prefill));
+      window.location.href = 'auth.html';
+      return;
+    }
     sessionStorage.setItem('ff_prefill', JSON.stringify(prefill));
-    window.location.href = 'auth.html';
-    return;
-  }
-  sessionStorage.setItem('ff_prefill', JSON.stringify(prefill));
-  window.location.href = 'stylist.html';
+    window.location.href = 'stylist.html';
+  });
 }
 
 /* ── RENDER TREND CARDS ── */

@@ -14,11 +14,11 @@ function showToast(msg, type = 'success') {
 }
 
 /* ── PERSONALISE GREETING ── */
-const user = JSON.parse(localStorage.getItem('ff_user') || 'null');
-if (user) {
+window.userReady.then(user => {
+  if (!user) return;
   const el = document.getElementById('q-greeting');
   if (el) el.textContent = `Hey ${user.first_name}, let's build your style profile ✨`;
-}
+});
 
 /* ══════════════════════════════
    OUTFIT DATA
@@ -537,7 +537,8 @@ document.querySelectorAll('input[name="q-vibe"]').forEach(cb => {
 });
 
 nextBtn.addEventListener('click', async () => {
-  if (!localStorage.getItem('ff_user')) {
+  const user = window.currentUser ?? await window.userReady;
+  if (!user) {
     window.requireAuth && window.requireAuth();
     return;
   }
@@ -713,18 +714,19 @@ document.getElementById('r-restart').addEventListener('click', () => {
 /* ══════════════════════════════
    SAVE LOOK → WARDROBE
 ══════════════════════════════ */
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
-document.getElementById('r-save').addEventListener('click', () => {
+async function saveCurrentLook() {
   if (!lastAnswers) return;
+  const user = window.currentUser ?? await window.userReady;
+  if (!user) {
+    window.requireAuth && window.requireAuth(saveCurrentLook);
+    return;
+  }
+
   const type  = lastType || detectType(lastAnswers);
   const data  = DB[type];
   const label = document.getElementById('r-badge').textContent;
 
   const look = {
-    id:      generateId(),
     label,
     type,
     pieces:  data.pieces,
@@ -736,14 +738,26 @@ document.getElementById('r-save').addEventListener('click', () => {
     fav:     false,
   };
 
-  const saved = JSON.parse(localStorage.getItem('ff_saved_looks') || '[]');
-  saved.unshift(look);
-  if (saved.length > 50) saved.pop();
-  localStorage.setItem('ff_saved_looks', JSON.stringify(saved));
+  try {
+    const res = await fetch(`${window.API_BASE_URL}/saved-looks`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ look }),
+    });
 
-  showToast('Look saved to Wardrobe 👗', 'success');
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || 'Could not save look.');
+    }
 
-  // Update save button
+    showToast('Look saved to Wardrobe 👗', 'success');
+  } catch (err) {
+    console.error('Save look failed:', err);
+    showToast('Could not save look. Please try again.', 'error');
+    return;
+  }
+
   const saveBtn = document.getElementById('r-save');
   saveBtn.textContent = '✓ Saved to Wardrobe';
   saveBtn.style.background = 'rgba(16,185,129,0.08)';
@@ -755,7 +769,9 @@ document.getElementById('r-save').addEventListener('click', () => {
     saveBtn.style.borderColor = '';
     saveBtn.style.color = '';
   }, 3000);
-});
+}
+
+document.getElementById('r-save').addEventListener('click', saveCurrentLook);
 
 /* ── WARDROBE LINK ── */
 const wdLink = document.getElementById('r-wardrobe-link');

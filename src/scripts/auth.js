@@ -1,11 +1,10 @@
 /* ══════════════════════════════
    API CONFIG
-   On Vercel (static deploy) there is no backend.
-   We detect this and fall back to client-side
-   localStorage auth so the site works fully.
+   Use the Supabase-backed backend for authentication and storage.
 ══════════════════════════════ */
-const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const API = IS_LOCAL ? 'http://localhost:3002/api' : null;
+const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? `${location.protocol}//${location.hostname}:3002/api`
+  : '/api';
 
 /* ─────────────────────────────────────────
    GOOGLE SIGN-IN
@@ -75,13 +74,12 @@ async function handleGoogleCredential(response) {
   try {
     const res  = await fetch(`${API}/google`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ credential: response.credential })
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.error || 'Google sign-in failed.', 'error'); return; }
-    localStorage.setItem('ff_token', data.token);
-    localStorage.setItem('ff_user', JSON.stringify(data.user));
     showToast(`Welcome, ${data.user.first_name} ✨`, 'success');
     setTimeout(() => { window.location.href = data.isNew ? 'outfit.html' : 'index.html'; }, 1000);
   } catch {
@@ -216,32 +214,10 @@ document.getElementById('login').addEventListener('submit', async e => {
 
   setLoading(btn, true);
 
-  /* ── CLIENT-SIDE AUTH (Vercel / no backend) ── */
-  if (!API) {
-    await new Promise(r => setTimeout(r, 800));
-    // Check if user registered locally
-    const stored = JSON.parse(localStorage.getItem('ff_accounts') || '[]');
-    const found  = stored.find(u => u.email === email.value && u.password === btoa(pw.value));
-    if (!found) {
-      showToast('No account found. Please sign up first.', 'error');
-      setLoading(btn, false);
-      return;
-    }
-    const user = { id: found.id, first_name: found.first_name, last_name: found.last_name, email: found.email };
-    localStorage.setItem('ff_token', 'local_' + Date.now());
-    localStorage.setItem('ff_user', JSON.stringify(user));
-    showToast(`Welcome back, ${user.first_name} ✨`, 'success');
-    const returnUrl = sessionStorage.getItem('ff_return') || 'index.html';
-    sessionStorage.removeItem('ff_return');
-    setTimeout(() => window.location.href = returnUrl, 1200);
-    setLoading(btn, false);
-    return;
-  }
-
-  /* ── SERVER AUTH (localhost) ── */
   try {
     const res  = await fetch(`${API}/login`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.value, password: pw.value })
     });
@@ -250,8 +226,6 @@ document.getElementById('login').addEventListener('submit', async e => {
     if (!res.ok) {
       showToast(data.error || 'Login failed.', 'error');
     } else {
-      localStorage.setItem('ff_token', data.token);
-      localStorage.setItem('ff_user', JSON.stringify(data.user));
       showToast(`Welcome back, ${data.user.first_name} ✨`, 'success');
       const returnUrl = sessionStorage.getItem('ff_return') || 'index.html';
       sessionStorage.removeItem('ff_return');
@@ -288,39 +262,10 @@ document.getElementById('signup').addEventListener('submit', async e => {
 
   setLoading(btn, true);
 
-  /* ── CLIENT-SIDE AUTH (Vercel / no backend) ── */
-  if (!API) {
-    await new Promise(r => setTimeout(r, 800));
-    const accounts = JSON.parse(localStorage.getItem('ff_accounts') || '[]');
-    if (accounts.find(u => u.email === email.value)) {
-      showToast('Email already registered. Please sign in.', 'error');
-      setLoading(btn, false);
-      return;
-    }
-    const newUser = {
-      id:         Date.now(),
-      first_name: fname.value.trim(),
-      last_name:  lname.value.trim(),
-      email:      email.value,
-      password:   btoa(pw.value),   // base64 — not secure, demo only
-    };
-    accounts.push(newUser);
-    localStorage.setItem('ff_accounts', JSON.stringify(accounts));
-    const user = { id: newUser.id, first_name: newUser.first_name, last_name: newUser.last_name, email: newUser.email };
-    localStorage.setItem('ff_token', 'local_' + Date.now());
-    localStorage.setItem('ff_user', JSON.stringify(user));
-    showToast(`Welcome to FitFusion, ${user.first_name} ✨`, 'success');
-    const returnUrl = sessionStorage.getItem('ff_return') || 'index.html';
-    sessionStorage.removeItem('ff_return');
-    setTimeout(() => window.location.href = returnUrl, 1200);
-    setLoading(btn, false);
-    return;
-  }
-
-  /* ── SERVER AUTH (localhost) ── */
   try {
-    const res  = await fetch(`${API}/signup`, {
+    const res = await fetch(`${API}/signup`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         first_name: fname.value.trim(),
@@ -334,8 +279,6 @@ document.getElementById('signup').addEventListener('submit', async e => {
     if (!res.ok) {
       showToast(data.error || 'Signup failed.', 'error');
     } else {
-      localStorage.setItem('ff_token', data.token);
-      localStorage.setItem('ff_user', JSON.stringify(data.user));
       showToast(`Welcome to FitFusion, ${data.user.first_name} ✨`, 'success');
       const returnUrl = sessionStorage.getItem('ff_return') || 'index.html';
       sessionStorage.removeItem('ff_return');

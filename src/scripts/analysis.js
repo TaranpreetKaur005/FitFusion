@@ -14,17 +14,17 @@ function showToast(msg, type = 'success') {
 }
 
 /* ── AUTH GATE ── */
-const user = JSON.parse(localStorage.getItem('ff_user') || 'null');
-if (!user) {
-  sessionStorage.setItem('ff_return', 'analysis.html');
-  window.location.href = 'auth.html';
-}
+window.userReady.then(() => {
+  const user = window.currentUser;
+  if (!user) {
+    sessionStorage.setItem('ff_return', 'analysis.html');
+    window.location.href = 'auth.html';
+    return;
+  }
 
-/* ── PERSONALISE GREETING ── */
-if (user) {
   const el = document.getElementById('an-greeting');
   if (el) el.textContent = `${user.first_name}'s Style Analysis`;
-}
+});
 
 /* ══════════════════════════════
    ANALYSIS ENGINE
@@ -33,7 +33,7 @@ if (user) {
 ══════════════════════════════ */
 
 /* API Configuration */
-const API_BASE_URL = 'http://localhost:3002/api';
+const API_BASE_URL = window.API_BASE_URL || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:3002/api' : '/api');
 
 /* ── GEMINI AI ANALYSIS ── */
 async function analyzeOutfitWithAI(imageData) {

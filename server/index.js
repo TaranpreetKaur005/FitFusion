@@ -6,6 +6,8 @@ const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const https    = require('https');
 const fetch    = require('node-fetch');
+const path     = require('path');
+const supabase = require('./config/supabase');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app    = express();
@@ -16,18 +18,69 @@ const SECRET = process.env.JWT_SECRET || 'fitfusion_jwt_secret_change_in_product
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '20mb' }));
 
-/* ══════════════════════════════
-   IN-MEMORY USER STORE
-   (SQLite removed — works without DB file)
-══════════════════════════════ */
-const users = [];
-let nextId  = 1;
+function parseCookies(req) {
+  return (req.headers.cookie || '').split(';').reduce((acc, cookie) => {
+    const [name, ...rest] = cookie.trim().split('=');
+    if (!name) return acc;
+    acc[name] = decodeURIComponent(rest.join('='));
+    return acc;
+  }, {});
+}
 
-function findUserByEmail(email) {
-  return users.find(u => u.email === email);
+function getToken(req) {
+  const auth = req.headers.authorization || '';
+  if (auth.startsWith('Bearer ')) return auth.slice(7).trim();
+  const cookies = parseCookies(req);
+  return cookies.ff_session;
+}
+
+async function getUserFromToken(req) {
+  const token = getToken(req);
+  if (!token) return null;
+
+  try {
+    const payload = jwt.verify(token, SECRET);
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, first_name, last_name, email')
+      .eq('id', payload.id)
+      .single();
+
+    if (error || !data) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function setSessionCookie(res, token) {
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.cookie('ff_session', token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function clearSessionCookie(res) {
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.cookie('ff_session', '', {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    maxAge: 0,
+  });
+}
+
+async function requireAuth(req, res, next) {
+  const user = await getUserFromToken(req);
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+  req.user = user;
+  next();
 }
 
 /* ══════════════════════════════
@@ -35,43 +88,69 @@ function findUserByEmail(email) {
 ══════════════════════════════ */
 
 /* POST /api/signup */
-app.post('/api/signup', (req, res) => {
+app.post('/api/signup', async (req, res) => {
   const { first_name, last_name, email, password } = req.body;
   if (!first_name || !last_name || !email || !password)
     return res.status(400).json({ error: 'All fields are required.' });
   if (password.length < 8)
     return res.status(400).json({ error: 'Password must be at least 8 characters.' });
-  if (findUserByEmail(email))
+
+  const { data: existingUser, error: lookupError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (lookupError) {
+    console.error('Signup lookup error:', lookupError);
+    return res.status(500).json({ error: 'Unable to validate user.', details: lookupError });
+  }
+
+  if (existingUser) {
     return res.status(409).json({ error: 'Email already registered.' });
+  }
 
   const hashed = bcrypt.hashSync(password, 10);
-  const user   = { id: nextId++, first_name, last_name, email, password: hashed };
-  users.push(user);
+  const { data: user, error: insertError } = await supabase
+    .from('users')
+    .insert({ first_name, last_name, email, password: hashed })
+    .select('id, first_name, last_name, email')
+    .single();
+
+  if (insertError || !user) {
+    console.error('Signup insert error:', insertError);
+    return res.status(500).json({ error: 'Could not create account.', details: insertError });
+  }
 
   const token = jwt.sign({ id: user.id, email }, SECRET, { expiresIn: '7d' });
-  res.status(201).json({
-    message: 'Account created successfully.',
-    token,
-    user: { id: user.id, first_name, last_name, email }
-  });
+  setSessionCookie(res, token);
+  res.status(201).json({ message: 'Account created successfully.', user });
 });
 
 /* POST /api/login */
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
     return res.status(400).json({ error: 'Email and password are required.' });
 
-  const user = findUserByEmail(email);
-  if (!user || !bcrypt.compareSync(password, user.password))
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id, first_name, last_name, email, password')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Login lookup error:', error);
+    return res.status(500).json({ error: 'Unable to validate credentials.', details: error });
+  }
+
+  if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(401).json({ error: 'Invalid email or password.' });
+  }
 
   const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '7d' });
-  res.json({
-    message: 'Signed in successfully.',
-    token,
-    user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email }
-  });
+  setSessionCookie(res, token);
+  res.json({ message: 'Signed in successfully.', user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email } });
 });
 
 /* POST /api/google */
@@ -90,33 +169,161 @@ app.post('/api/google', async (req, res) => {
             const p = JSON.parse(data);
             if (p.error) return reject(new Error(p.error));
             resolve(p);
-          } catch { reject(new Error('Invalid token')); }
+          } catch {
+            reject(new Error('Invalid token'));
+          }
         });
       }).on('error', reject);
     });
 
     const { email, given_name, family_name, sub } = payload;
-    let user = findUserByEmail(email);
+    const { data: existingUser, error: lookupError } = await supabase
+      .from('users')
+      .select('id, first_name, last_name, email')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (lookupError) {
+      return res.status(500).json({ error: 'Unable to validate Google account.' });
+    }
+
+    let user = existingUser;
     let isNew = false;
 
     if (!user) {
-      user = { id: nextId++, first_name: given_name || 'Google', last_name: family_name || 'User', email, password: `google_${sub}` };
-      users.push(user);
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert({
+          first_name: given_name || 'Google',
+          last_name: family_name || 'User',
+          email,
+          password: `google_${sub}`,
+        })
+        .select('id, first_name, last_name, email')
+        .single();
+
+      if (insertError || !newUser) {
+        return res.status(500).json({ error: 'Could not create Google account.' });
+      }
+
+      user = newUser;
       isNew = true;
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '7d' });
-    res.json({
-      message: isNew ? 'Account created.' : 'Signed in.',
-      token, isNew,
-      user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email }
-    });
+    setSessionCookie(res, token);
+
+    res.json({ message: isNew ? 'Account created.' : 'Signed in.', isNew, user });
   } catch (err) {
     res.status(401).json({ error: 'Google sign-in failed. ' + err.message });
   }
 });
 
-/* ══════════════════════════════
+app.get('/api/me', async (req, res) => {
+  const user = await getUserFromToken(req);
+  res.json({ user });
+});
+
+app.post('/api/logout', (_req, res) => {
+  clearSessionCookie(res);
+  res.json({ message: 'Signed out.' });
+});
+
+app.post('/api/outfit', requireAuth, async (req, res) => {
+  const { gender, occasion, style, colors, budget, extras } = req.body;
+  const user = req.user;
+
+  const { error } = await supabase
+    .from('outfit_prefs')
+    .insert({
+      user_id: user.id,
+      gender,
+      occasion,
+      style,
+      colors: JSON.stringify(colors),
+      budget,
+      extras,
+    });
+
+  if (error) {
+    return res.status(500).json({ error: 'Could not save profile.' });
+  }
+
+  res.json({ message: 'Profile saved.', saved: true });
+});
+
+app.get('/api/saved-looks', requireAuth, async (req, res) => {
+  const user = req.user;
+  const { data, error } = await supabase
+    .from('saved_looks')
+    .select('id, look_data, created_at, updated_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: 'Could not load saved looks.', details: error });
+  }
+
+  res.json({ looks: data.map(row => ({ ...row.look_data, id: row.id.toString(), created_at: row.created_at, updated_at: row.updated_at })) });
+});
+
+app.post('/api/saved-looks', requireAuth, async (req, res) => {
+  const user = req.user;
+  const { look } = req.body;
+  if (!look) return res.status(400).json({ error: 'Look data required.' });
+
+  const { data, error } = await supabase
+    .from('saved_looks')
+    .insert({ user_id: user.id, look_data: look })
+    .select('id, look_data, created_at, updated_at')
+    .single();
+
+  if (error || !data) {
+    return res.status(500).json({ error: 'Could not save look.', details: error });
+  }
+
+  res.status(201).json({ look: { ...data.look_data, id: data.id.toString(), created_at: data.created_at, updated_at: data.updated_at } });
+});
+
+app.patch('/api/saved-looks/:id', requireAuth, async (req, res) => {
+  const user = req.user;
+  const { id } = req.params;
+  const { look } = req.body;
+  if (!look) return res.status(400).json({ error: 'Look data required.' });
+
+  const { data, error } = await supabase
+    .from('saved_looks')
+    .update({ look_data: look })
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select('id, look_data, created_at, updated_at')
+    .single();
+
+  if (error || !data) {
+    return res.status(500).json({ error: 'Could not update look.' });
+  }
+
+  res.json({ look: { ...data.look_data, id: data.id.toString(), created_at: data.created_at, updated_at: data.updated_at } });
+});
+
+app.delete('/api/saved-looks/:id', requireAuth, async (req, res) => {
+  const user = req.user;
+  const { id } = req.params;
+
+  const { error } = await supabase
+    .from('saved_looks')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return res.status(500).json({ error: 'Could not delete look.' });
+  }
+
+  res.json({ message: 'Deleted' });
+});
+
+/* ═════════════════════════════=
    GEMINI — OUTFIT ANALYSIS
    Accepts base64 image + returns structured analysis
 ══════════════════════════════ */
@@ -276,9 +483,12 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+/* ── STATIC FRONTEND ── */
+app.use(express.static(path.join(__dirname, '..')));
+
 /* ── START ── */
 app.listen(PORT, () => {
-  console.log(`\n🔥 FitFusion API  →  http://localhost:${PORT}`);
+  console.log(`\n🔥 FitFusion API + frontend  →  http://localhost:${PORT}`);
   console.log(`   Gemini model   :  ${GEMINI_MODEL}`);
   console.log(`   POST  /api/signup`);
   console.log(`   POST  /api/login`);

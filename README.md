@@ -86,6 +86,7 @@ JWT_SECRET=your_secure_random_string
 # Supabase Config
 SUPABASE_URL=your_project_url
 SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 # AI API Keys
 GEMINI_API_KEY=your_google_ai_key
@@ -95,6 +96,8 @@ POLLINATION_API_KEY=your_pollinations_key
 OPENAI_API_KEY=your_openai_key (Optional)
 HUGGINGFACE_API_KEY=your_huggingface_key (Optional)
 ```
+
+> Note: If you have row-level security enabled in Supabase, the backend requires `SUPABASE_SERVICE_ROLE_KEY` for server-side writes and authenticated queries.
 
 ### 5. Running the Application
 

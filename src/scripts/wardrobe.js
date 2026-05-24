@@ -1,6 +1,6 @@
 /* ══════════════════════════════
    WARDROBE — full functionality
-   Reads from localStorage: ff_saved_looks
+   Server-backed saved looks
    Each look: { id, label, type, pieces, tips, palette, answers, ts, fav, img }
 ══════════════════════════════ */
 
@@ -15,26 +15,48 @@ function showToast(msg, type = 'success') {
 }
 
 /* ── AUTH GATE ── */
-const user = JSON.parse(localStorage.getItem('ff_user') || 'null');
-if (!user) {
-  // Redirect to auth, return here after login
-  sessionStorage.setItem('ff_return', 'wardrobe.html');
-  window.location.href = 'auth.html';
-}
+window.userReady.then(user => {
+  if (!user) {
+    sessionStorage.setItem('ff_return', 'wardrobe.html');
+    window.location.href = 'auth.html';
+    return;
+  }
 
-/* ── PERSONALISE GREETING ── */
-if (user) {
   const el = document.getElementById('wd-greeting');
   if (el) el.textContent = `${user.first_name}'s Wardrobe`;
-}
+  initWardrobe();
+});
 
-/* ── LOAD LOOKS ── */
-function loadLooks() {
-  return JSON.parse(localStorage.getItem('ff_saved_looks') || '[]');
+let looksCache = [];
+
+async function loadLooks() {
+  if (looksCache.length) return looksCache;
+
+  try {
+    const res = await fetch(`${window.API_BASE_URL}/saved-looks`, {
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Unable to load saved looks.');
+    const data = await res.json();
+    looksCache = (data.looks || []).map(look => ({
+      ...look,
+      ts: look.ts || (look.created_at ? new Date(look.created_at).toLocaleString() : ''),
+      fav: look.fav || false,
+    }));
+    return looksCache;
+  } catch (err) {
+    console.error('Failed to load wardrobe:', err);
+    showToast('Could not load your wardrobe. Please refresh.', 'error');
+    return [];
+  }
 }
 
 function saveLooks(looks) {
-  localStorage.setItem('ff_saved_looks', JSON.stringify(looks));
+  looksCache = looks;
+}
+
+async function initWardrobe() {
+  await renderGrid();
 }
 
 /* ── COLOUR THEMES per outfit type ── */
@@ -99,8 +121,8 @@ let currentFilter = 'all';
 let currentSearch = '';
 let isListView    = false;
 
-function renderGrid() {
-  const looks = loadLooks();
+async function renderGrid() {
+  const looks = await loadLooks();
   renderStats(looks);
 
   let filtered = looks;
@@ -177,11 +199,28 @@ function renderGrid() {
 }
 
 /* ── TOGGLE FAVOURITE ── */
-function toggleFav(id) {
-  const looks = loadLooks();
+async function toggleFav(id) {
+  const looks = await loadLooks();
   const look  = looks.find(l => l.id === id);
   if (!look) return;
   look.fav = !look.fav;
+
+  try {
+    const res = await fetch(`${window.API_BASE_URL}/saved-looks/${id}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ look }),
+    });
+    if (!res.ok) throw new Error('Unable to update favourite.');
+    await res.json();
+  } catch (err) {
+    console.error('Failed to update favourite:', err);
+    look.fav = !look.fav;
+    showToast('Could not update favourite. Please try again.', 'error');
+    return;
+  }
+
   saveLooks(looks);
   renderGrid();
   showToast(look.fav ? '❤️ Added to favourites' : 'Removed from favourites', 'success');
@@ -190,8 +229,8 @@ function toggleFav(id) {
 /* ── OPEN MODAL ── */
 let activeId = null;
 
-function openModal(id) {
-  const looks = loadLooks();
+async function openModal(id) {
+  const looks = await loadLooks();
   const look  = looks.find(l => l.id === id);
   if (!look) return;
   activeId = id;
@@ -259,11 +298,10 @@ document.getElementById('wd-modal').addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-document.getElementById('modal-fav-btn').addEventListener('click', () => {
+document.getElementById('modal-fav-btn').addEventListener('click', async () => {
   if (!activeId) return;
-  toggleFav(activeId);
-  // Update button in modal
-  const looks = loadLooks();
+  await toggleFav(activeId);
+  const looks = await loadLooks();
   const look  = looks.find(l => l.id === activeId);
   if (look) {
     const btn = document.getElementById('modal-fav-btn');
@@ -272,8 +310,8 @@ document.getElementById('modal-fav-btn').addEventListener('click', () => {
   }
 });
 
-document.getElementById('modal-share-btn').addEventListener('click', () => {
-  const looks = loadLooks();
+document.getElementById('modal-share-btn').addEventListener('click', async () => {
+  const looks = await loadLooks();
   const look  = looks.find(l => l.id === activeId);
   if (!look) return;
   const text = `Check out my ${look.label} look from FitFusion! 🔥`;
@@ -284,18 +322,27 @@ document.getElementById('modal-share-btn').addEventListener('click', () => {
   }
 });
 
-document.getElementById('modal-delete-btn').addEventListener('click', () => {
+document.getElementById('modal-delete-btn').addEventListener('click', async () => {
   if (!activeId) return;
-  const looks   = loadLooks();
-  const updated = looks.filter(l => l.id !== activeId);
-  saveLooks(updated);
-  closeModal();
-  renderGrid();
-  showToast('Look deleted', 'error');
+  try {
+    const res = await fetch(`${window.API_BASE_URL}/saved-looks/${activeId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Unable to delete look.');
+    await res.json();
+    looksCache = looksCache.filter(l => l.id !== activeId);
+    closeModal();
+    renderGrid();
+    showToast('Look deleted', 'error');
+  } catch (err) {
+    console.error('Failed to delete look:', err);
+    showToast('Could not delete look. Please try again.', 'error');
+  }
 });
 
-document.getElementById('modal-restyle').addEventListener('click', () => {
-  const looks = loadLooks();
+document.getElementById('modal-restyle').addEventListener('click', async () => {
+  const looks = await loadLooks();
   const look  = looks.find(l => l.id === activeId);
   if (look?.answers) {
     sessionStorage.setItem('ff_prefill', JSON.stringify(look.answers));
@@ -335,4 +382,4 @@ document.getElementById('view-list').addEventListener('click', () => {
 });
 
 /* ── INIT ── */
-renderGrid();
+// Wardrobe is initialized after auth via window.userReady
