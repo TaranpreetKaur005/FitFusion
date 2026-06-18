@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFusion — Admin Panel</title>
+  <link rel="stylesheet" href="src/styles/styles.css">
+  <style>
+    body { background: #0f0f1a; color: #e5e7eb; font-family: Poppins, sans-serif; margin: 0; min-height: 100vh; }
+
+    /* ── TOP BAR ── */
+    .admin-bar {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(124,58,237,0.2);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-logo {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #7c3aed, #ec4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .admin-badge {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171;
+      border-radius: 50px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .admin-home-link {
+      color: #9ca3af;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .admin-home-link:hover { color: #7c3aed; }
+
+    /* ── MAIN ── */
+    .admin-main { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── AUTH GATE ── */
+    .admin-auth-gate {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 440px;
+      margin: 80px auto;
+      text-align: center;
+    }
+    .admin-auth-gate h2 { font-size: 20px; font-weight: 700; color: #f9fafb; margin: 0 0 8px; }
+    .admin-auth-gate p  { font-size: 14px; color: #9ca3af; margin: 0 0 24px; }
+    .admin-key-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(124,58,237,0.25);
+      border-radius: 12px;
+      color: #f9fafb;
+      font-family: Poppins, sans-serif;
+      font-size: 13px;
+      outline: none;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .admin-key-input:focus { border-color: #7c3aed; }
+    .admin-key-input::placeholder { color: #6b7280; }
+    .admin-unlock-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #7c3aed, #ec4899);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: Poppins, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .admin-unlock-btn:hover { opacity: 0.88; }
+
+    /* ── STATS ROW ── */
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .admin-stat-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(124,58,237,0.15);
+      border-radius: 16px;
+      padding: 20px 24px;
+    }
+    .admin-stat-label { font-size: 12px; color: #9ca3af; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .admin-stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #7c3aed, #ec4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    /* ── TABLE SECTION ── */
+    .admin-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .admin-section-title { font-size: 18px; font-weight: 700; color: #f9fafb; margin: 0; }
+    .admin-search {
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(124,58,237,0.2);
+      border-radius: 10px;
+      color: #f9fafb;
+      font-family: Poppins, sans-serif;
+      font-size: 13px;
+      outline: none;
+      min-width: 220px;
+      transition: border-color 0.2s;
+    }
+    .admin-search:focus { border-color: #7c3aed; }
+    .admin-search::placeholder { color: #6b7280; }
+
+    .admin-refresh-btn {
+      padding: 8px 16px;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 10px;
+      color: #a78bfa;
+      font-family: Poppins, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .admin-refresh-btn:hover { background: rgba(124,58,237,0.25); }
+
+    /* ── TABLE ── */
+    .admin-table-wrap {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(124,58,237,0.12);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .admin-table th {
+      background: rgba(124,58,237,0.1);
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(124,58,237,0.15);
+    }
+    .admin-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px;
+      color: #e5e7eb;
+      vertical-align: middle;
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+    .user-avatar-cell {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .user-name-cell { display: flex; align-items: center; gap: 12px; }
+    .user-name-text { font-weight: 600; color: #f9fafb; }
+    .user-email-text { font-size: 12px; color: #9ca3af; }
+
+    .badge-new {
+      background: rgba(16,185,129,0.15);
+      color: #34d399;
+      border-radius: 50px;
+      padding: 2px 10px;
+      font-size: 10px;
+      font-weight: 600;
+      border: 1px solid rgba(16,185,129,0.25);
+    }
+
+    .delete-user-btn {
+      padding: 6px 14px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 8px;
+      color: #f87171;
+      font-family: Poppins, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .delete-user-btn:hover { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); }
+
+    /* ── LOADING / EMPTY ── */
+    .admin-loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #9ca3af;
+    }
+    .admin-loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(124,58,237,0.2);
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: #111;
+      color: white;
+      padding: 11px 24px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    .toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: linear-gradient(90deg, #7c3aed, #ec4899); }
+    .toast.error   { background: #ef4444; }
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 5000;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+      background: #1a1a2e;
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+    }
+    .confirm-icon { font-size: 40px; margin-bottom: 12px; }
+    .confirm-box h3 { font-size: 18px; font-weight: 700; color: #f9fafb; margin: 0 0 8px; }
+    .confirm-box p  { font-size: 13px; color: #9ca3af; margin: 0 0 24px; line-height: 1.5; }
+    .confirm-btns { display: flex; gap: 10px; }
+    .confirm-cancel, .confirm-delete {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      font-family: Poppins, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .confirm-cancel { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #e5e7eb; }
+    .confirm-delete { background: #ef4444; border: none; color: white; }
+    .confirm-cancel:hover, .confirm-delete:hover { opacity: 0.85; }
+
+    @media (max-width: 640px) {
+      .admin-stats { grid-template-columns: 1fr; }
+      .admin-table th:nth-child(3), .admin-table td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="admin-bar">
+  <span class="admin-logo">🔥 FitFusion</span>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span class="admin-badge">🔐 Admin Panel</span>
+    <a href="index.html" class="admin-home-link">← Back to App</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="admin-main" id="admin-main">
+
+  <!-- AUTH GATE -->
+  <div class="admin-auth-gate" id="auth-gate">
+    <div style="font-size:48px;margin-bottom:16px">🔐</div>
+    <h2>Admin Access Required</h2>
+    <p>Enter your Supabase Service Role Key to access the user management panel.</p>
+    <input type="password" id="admin-key-input" class="admin-key-input" placeholder="Enter service role key…" autocomplete="off">
+    <button class="admin-unlock-btn" id="unlock-btn">Unlock Panel</button>
+    <p id="auth-error" style="color:#f87171;font-size:12px;margin-top:10px;display:none">Invalid key. Please try again.</p>
+  </div>
+
+  <!-- PANEL (hidden until authenticated) -->
+  <div id="admin-panel" style="display:none">
+
+    <!-- STATS -->
+    <div class="admin-stats" id="admin-stats">
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">Total Users</div>
+        <div class="admin-stat-num" id="stat-users">—</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">New Today</div>
+        <div class="admin-stat-num" id="stat-today">—</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">New This Week</div>
+        <div class="admin-stat-num" id="stat-week">—</div>
+      </div>
+    </div>
+
+    <!-- USERS TABLE -->
+    <div class="admin-section-header">
+      <h2 class="admin-section-title">👥 Users</h2>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="user-search" class="admin-search" placeholder="🔍  Search by name or email…">
+        <button class="admin-refresh-btn" id="refresh-btn">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="admin-table-wrap">
+      <div class="admin-loading" id="table-loading">
+        <div class="admin-loading-spinner"></div>
+        <p>Loading users…</p>
+      </div>
+      <table class="admin-table" id="users-table" style="display:none">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+      <div id="table-empty" style="display:none;text-align:center;padding:40px;color:#9ca3af">
+        No users found.
+      </div>
+    </div>
+
+  </div><!-- /admin-panel -->
+</div><!-- /admin-main -->
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <h3>Delete User?</h3>
+    <p id="confirm-msg">This will permanently delete the user and all their data (saved looks, outfits, preferences). This cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+      <button class="confirm-delete" id="confirm-delete">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── CONFIG ── */
+const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? `${location.protocol}//${location.hostname}:3002/api`
+  : '/api';
+
+/* ── TOAST ── */
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function showToast(msg, type = 'success') {
+  clearTimeout(toastTimer);
+  toastEl.textContent = msg;
+  toastEl.className = `toast ${type} show`;
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
+}
+
+/* ── STATE ── */
+let adminKey = '';
+let allUsers = [];
+let pendingDeleteId = null;
+
+/* ── AUTH GATE ── */
+document.getElementById('unlock-btn').addEventListener('click', () => authenticate());
+document.getElementById('admin-key-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') authenticate();
+});
+
+async function authenticate() {
+  const key = document.getElementById('admin-key-input').value.trim();
+  if (!key) return;
+
+  // Test the key by calling the users endpoint
+  try {
+    const res = await fetch(`${API}/admin/users`, {
+      headers: { 'x-admin-key': key }
+    });
+    if (!res.ok) {
+      document.getElementById('auth-error').style.display = 'block';
+      return;
+    }
+    adminKey = key;
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    document.getElementById('auth-error').style.display = 'none';
+    const data = await res.json();
+    renderUsers(data.users || []);
+  } catch {
+    document.getElementById('auth-error').style.display = 'block';
+    document.getElementById('auth-error').textContent = 'Cannot reach server. Is it running?';
+  }
+}
+
+/* ── LOAD USERS ── */
+async function loadUsers() {
+  document.getElementById('table-loading').style.display = 'block';
+  document.getElementById('users-table').style.display   = 'none';
+  document.getElementById('table-empty').style.display   = 'none';
+
+  try {
+    const res = await fetch(`${API}/admin/users`, {
+      headers: { 'x-admin-key': adminKey }
+    });
+    if (!res.ok) throw new Error('Failed to load users');
+    const data = await res.json();
+    renderUsers(data.users || []);
+  } catch (err) {
+    showToast('Could not load users: ' + err.message, 'error');
+    document.getElementById('table-loading').style.display = 'none';
+  }
+}
+
+/* ── RENDER USERS ── */
+function renderUsers(users) {
+  allUsers = users;
+  document.getElementById('table-loading').style.display = 'none';
+
+  // Stats
+  document.getElementById('stat-users').textContent = users.length;
+  const now   = new Date();
+  const today = users.filter(u => {
+    const d = new Date(u.created_at);
+    return d.toDateString() === now.toDateString();
+  }).length;
+  const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+  const week  = users.filter(u => new Date(u.created_at) >= weekAgo).length;
+  document.getElementById('stat-today').textContent = today;
+  document.getElementById('stat-week').textContent  = week;
+
+  filterAndDisplay();
+}
+
+function filterAndDisplay() {
+  const q = document.getElementById('user-search').value.toLowerCase().trim();
+  const filtered = q
+    ? allUsers.filter(u =>
+        `${u.first_name} ${u.last_name}`.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q)
+      )
+    : allUsers;
+
+  const tbody = document.getElementById('users-tbody');
+  const table = document.getElementById('users-table');
+  const empty = document.getElementById('table-empty');
+
+  if (!filtered.length) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  table.style.display = '';
+  empty.style.display = 'none';
+
+  const now     = new Date();
+  const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+
+  tbody.innerHTML = filtered.map(u => {
+    const initials = ((u.first_name?.[0] || '') + (u.last_name?.[0] || '')).toUpperCase();
+    const joined   = new Date(u.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+    const isNew    = new Date(u.created_at) >= weekAgo;
+    return `
+      <tr>
+        <td>
+          <div class="user-name-cell">
+            <div class="user-avatar-cell">${initials}</div>
+            <div>
+              <div class="user-name-text">${u.first_name} ${u.last_name}</div>
+            </div>
+          </div>
+        </td>
+        <td style="color:#9ca3af">${u.email}</td>
+        <td style="color:#6b7280;font-size:12px">${joined}</td>
+        <td>${isNew ? '<span class="badge-new">NEW</span>' : '<span style="color:#6b7280;font-size:12px">Active</span>'}</td>
+        <td style="text-align:right">
+          <button class="delete-user-btn" data-id="${u.id}" data-name="${u.first_name} ${u.last_name}">
+            🗑 Delete
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  // Attach delete handlers
+  tbody.querySelectorAll('.delete-user-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pendingDeleteId = btn.dataset.id;
+      document.getElementById('confirm-msg').textContent =
+        `This will permanently delete ${btn.dataset.name} and all their data (looks, outfits, preferences). This cannot be undone.`;
+      document.getElementById('confirm-overlay').classList.add('open');
+    });
+  });
+}
+
+/* ── SEARCH ── */
+document.getElementById('user-search').addEventListener('input', filterAndDisplay);
+
+/* ── REFRESH ── */
+document.getElementById('refresh-btn').addEventListener('click', loadUsers);
+
+/* ── DELETE CONFIRM ── */
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  pendingDeleteId = null;
+});
+
+document.getElementById('confirm-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('confirm-overlay')) {
+    document.getElementById('confirm-overlay').classList.remove('open');
+    pendingDeleteId = null;
+  }
+});
+
+document.getElementById('confirm-delete').addEventListener('click', async () => {
+  if (!pendingDeleteId) return;
+
+  const btn = document.getElementById('confirm-delete');
+  btn.disabled = true;
+  btn.textContent = 'Deleting…';
+
+  try {
+    const res = await fetch(`${API}/admin/users/${pendingDeleteId}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-key': adminKey }
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Delete failed');
+    }
+    allUsers = allUsers.filter(u => String(u.id) !== String(pendingDeleteId));
+    filterAndDisplay();
+    // Update stats
+    document.getElementById('stat-users').textContent = allUsers.length;
+    showToast('User deleted successfully', 'success');
+  } catch (err) {
+    showToast('Failed to delete: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Delete Permanently';
+    document.getElementById('confirm-overlay').classList.remove('open');
+    pendingDeleteId = null;
+  }
+});
+</script>
+</body>
+</html>

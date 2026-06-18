@@ -425,11 +425,67 @@ async function generateOutfitImage(answers, outfitLabel, pieces, type) {
 
   let succeeded = false;
 
+  async function uploadImageToSupabase(imgSrc, outfitLabel, outfitData) {
+    try {
+      const res = await fetch(imgSrc);
+      const blob = await res.blob();
+      const reader = new FileReader();
+      
+      return new Promise((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const base64 = reader.result;
+            const uploadRes = await fetch(`${window.API_BASE_URL}/save-generated-outfit`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json', ...window.getAuthHeaders() },
+              body: JSON.stringify({
+                image: base64,
+                outfitData: {
+                  label: outfitLabel,
+                  ...outfitData
+                },
+                userId: window.currentUser?.id || null
+              })
+            });
+            
+            if (uploadRes.ok) {
+              const data = await uploadRes.json();
+              resolve(data.imageUrl);
+            } else {
+              reject(new Error('Upload failed'));
+            }
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error('FileReader error'));
+        reader.readAsDataURL(blob);
+      });
+    } catch (err) {
+      console.warn('Supabase upload failed:', err);
+      return null; // Fallback to local URL
+    }
+  }
+
   // Attempt 1
   try {
     const img = await loadImageWithTimeout(buildUrl(seed), 45000);
     renderImage(container, img, outfitLabel);
     currentImageUrl = img.src;
+    
+    // Upload to Supabase and get permanent URL
+    const supabaseUrl = await uploadImageToSupabase(img.src, outfitLabel, { type, answers });
+    if (supabaseUrl) currentImageUrl = supabaseUrl;
+    
+    // Update the auto-saved look with the image URL
+    const localLooks = window.getLocalLooks();
+    if (localLooks.length > 0) {
+      const latestLook = localLooks[0];
+      latestLook.imgUrl = currentImageUrl;
+      window.setLocalLooks(localLooks);
+    }
+    
     dlBtn.disabled  = false;
     caption.textContent = `"${outfitLabel}" · AI-generated fashion photo`;
     succeeded = true;
@@ -441,6 +497,19 @@ async function generateOutfitImage(answers, outfitLabel, pieces, type) {
       const img2 = await loadImageWithTimeout(buildUrl(seed + 1), 35000);
       renderImage(container, img2, outfitLabel);
       currentImageUrl = img2.src;
+      
+      // Upload to Supabase and get permanent URL
+      const supabaseUrl = await uploadImageToSupabase(img2.src, outfitLabel, { type, answers });
+      if (supabaseUrl) currentImageUrl = supabaseUrl;
+      
+      // Update the auto-saved look with the image URL
+      const localLooks = window.getLocalLooks();
+      if (localLooks.length > 0) {
+        const latestLook = localLooks[0];
+        latestLook.imgUrl = currentImageUrl;
+        window.setLocalLooks(localLooks);
+      }
+      
       dlBtn.disabled  = false;
       caption.textContent = `"${outfitLabel}" · AI-generated fashion photo`;
       succeeded = true;
@@ -590,6 +659,7 @@ function getConfidenceDesc(score) {
 ══════════════════════════════ */
 let lastAnswers = null;
 let lastType    = null;
+let lastAutoSavedLookId = null;
 
 function showResult(a) {
   lastAnswers = a;
@@ -600,6 +670,23 @@ function showResult(a) {
   let label = data.label;
   if (a.season) label = a.season.charAt(0).toUpperCase() + a.season.slice(1) + ' ' + label;
   if (a.budget === 'luxury') label = 'Luxury ' + label;
+
+  // Auto-save generated outfit to local wardrobe
+  const autoSavedLook = {
+    id: window.generateLocalId(),
+    label,
+    type,
+    pieces:  data.pieces,
+    tips:    data.tips,
+    palette: data.palette,
+    answers: a,
+    imgUrl:  null, // Will be updated when image is generated
+    created_at: new Date().toISOString(),
+    ts:      new Date().toLocaleString(),
+    fav:     false,
+  };
+  lastAutoSavedLookId = autoSavedLook.id;
+  window.appendLocalLook(autoSavedLook);
 
   document.getElementById('r-badge').textContent = label;
 
@@ -715,34 +802,28 @@ document.getElementById('r-restart').addEventListener('click', () => {
    SAVE LOOK → WARDROBE
 ══════════════════════════════ */
 async function saveCurrentLook() {
-  if (!lastAnswers) return;
+  if (!lastAnswers || !lastAutoSavedLookId) return;
+
+  // Get the auto-saved look and update with current image
+  const localLooks = window.getLocalLooks();
+  let look = localLooks.find(l => l.id === lastAutoSavedLookId);
+  if (!look) return; // Shouldn't happen, but safety check
+  
+  look.imgUrl = currentImageUrl || null;
+  look.ts = new Date().toLocaleString();
+  
   const user = window.currentUser ?? await window.userReady;
   if (!user) {
-    window.requireAuth && window.requireAuth(saveCurrentLook);
+    window.appendLocalLook(look);
+    showToast('Look saved locally ✓', 'success');
     return;
   }
-
-  const type  = lastType || detectType(lastAnswers);
-  const data  = DB[type];
-  const label = document.getElementById('r-badge').textContent;
-
-  const look = {
-    label,
-    type,
-    pieces:  data.pieces,
-    tips:    data.tips,
-    palette: data.palette,
-    answers: lastAnswers,
-    imgUrl:  currentImageUrl || null,
-    ts:      new Date().toLocaleString(),
-    fav:     false,
-  };
 
   try {
     const res = await fetch(`${window.API_BASE_URL}/saved-looks`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...window.getAuthHeaders() },
       body: JSON.stringify({ look }),
     });
 
@@ -751,20 +832,27 @@ async function saveCurrentLook() {
       throw new Error(body.error || 'Could not save look.');
     }
 
+    const body = await res.json();
+    const savedLook = body.look;
+    if (savedLook) {
+      savedLook.ts = look.ts;
+      window.replaceLocalLook(look.id, savedLook);
+    }
     showToast('Look saved to Wardrobe 👗', 'success');
   } catch (err) {
     console.error('Save look failed:', err);
-    showToast('Could not save look. Please try again.', 'error');
+    window.appendLocalLook(look);
+    showToast('Look saved locally. Sync failed.', 'error');
     return;
   }
 
   const saveBtn = document.getElementById('r-save');
-  saveBtn.textContent = '✓ Saved to Wardrobe';
+  saveBtn.textContent = '✓ Saved';
   saveBtn.style.background = 'rgba(16,185,129,0.08)';
   saveBtn.style.borderColor = '#10b981';
   saveBtn.style.color = '#10b981';
   setTimeout(() => {
-    saveBtn.textContent = '🔖 Save This Look';
+    saveBtn.textContent = '🔖 Save to Wardrobe';
     saveBtn.style.background = '';
     saveBtn.style.borderColor = '';
     saveBtn.style.color = '';

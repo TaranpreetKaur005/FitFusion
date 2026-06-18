@@ -32,27 +32,70 @@ let looksCache = [];
 async function loadLooks() {
   if (looksCache.length) return looksCache;
 
+  const localLooks = window.getLocalLooks().map(look => ({
+    ...look,
+    ts: look.ts || (look.created_at ? new Date(look.created_at).toLocaleString() : ''),
+    fav: look.fav || false,
+  }));
+
+  if (!window.currentUser) {
+    looksCache = localLooks;
+    return looksCache;
+  }
+
   try {
-    const res = await fetch(`${window.API_BASE_URL}/saved-looks`, {
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Unable to load saved looks.');
-    const data = await res.json();
-    looksCache = (data.looks || []).map(look => ({
+    // Fetch both saved looks and generated outfits in parallel
+    const [savedRes, generatedRes] = await Promise.all([
+      fetch(`${window.API_BASE_URL}/saved-looks`, {
+        credentials: 'include',
+        headers: window.getAuthHeaders(),
+      }),
+      fetch(`${window.API_BASE_URL}/generated-outfits`, {
+        credentials: 'include',
+        headers: window.getAuthHeaders(),
+      })
+    ]);
+
+    if (!savedRes.ok) throw new Error('Unable to load saved looks.');
+    
+    const savedData = await savedRes.json();
+    const remoteLooks = (savedData.looks || []).map(look => ({
       ...look,
       ts: look.ts || (look.created_at ? new Date(look.created_at).toLocaleString() : ''),
       fav: look.fav || false,
+      source: 'saved'
     }));
+
+    let generatedOutfits = [];
+    if (generatedRes.ok) {
+      const generatedData = await generatedRes.json();
+      generatedOutfits = (generatedData.outfits || []).map(outfit => ({
+        ...outfit,
+        ts: outfit.ts || (outfit.created_at ? new Date(outfit.created_at).toLocaleString() : ''),
+        fav: outfit.fav || false,
+        source: 'generated'
+      }));
+    }
+
+    const merged = [...remoteLooks, ...generatedOutfits];
+    localLooks.forEach(local => {
+      if (!merged.some(item => item.id === local.id)) merged.push(local);
+    });
+
+    window.setLocalLooks(merged);
+    looksCache = merged;
     return looksCache;
   } catch (err) {
     console.error('Failed to load wardrobe:', err);
-    showToast('Could not load your wardrobe. Please refresh.', 'error');
-    return [];
+    showToast('Could not load your wardrobe. Showing local saves.', 'error');
+    looksCache = localLooks;
+    return looksCache;
   }
 }
 
 function saveLooks(looks) {
   looksCache = looks;
+  window.setLocalLooks(looks);
 }
 
 async function initWardrobe() {
@@ -156,10 +199,22 @@ async function renderGrid() {
 
   grid.innerHTML = filtered.map((look, i) => {
     const tags = [look.type, ...(look.answers?.vibes || [])].filter(Boolean).slice(0, 3);
+
+    // Show image if imgUrl exists — regardless of source
+    const hasImage = !!(look.imgUrl);
+    const visualHtml = hasImage
+      ? `<img src="${look.imgUrl}" alt="${look.label}"
+           style="width:100%;height:100%;object-fit:cover;object-position:top center;display:block"
+           loading="lazy"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+         <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:#f5f3ff;font-size:32px">👗</div>
+         <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);color:white;font-size:9px;font-weight:600;padding:3px 8px;border-radius:50px;white-space:nowrap">✨ AI</div>`
+      : buildOutfitCanvas(look, 'card');
+    
     return `
       <div class="wd-card" data-id="${look.id}" style="animation-delay:${i * 0.05}s">
-        <div class="wd-card-visual">
-          ${buildOutfitCanvas(look, 'card')}
+        <div class="wd-card-visual" style="position:relative">
+          ${visualHtml}
           <div class="wd-fav-badge ${look.fav ? 'active' : ''}" data-fav="${look.id}" title="Favourite">
             ${look.fav ? '❤️' : '🤍'}
           </div>
@@ -209,16 +264,14 @@ async function toggleFav(id) {
     const res = await fetch(`${window.API_BASE_URL}/saved-looks/${id}`, {
       method: 'PATCH',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...window.getAuthHeaders() },
       body: JSON.stringify({ look }),
     });
     if (!res.ok) throw new Error('Unable to update favourite.');
     await res.json();
   } catch (err) {
     console.error('Failed to update favourite:', err);
-    look.fav = !look.fav;
-    showToast('Could not update favourite. Please try again.', 'error');
-    return;
+    // Keep local favourite state even if remote update fails
   }
 
   saveLooks(looks);
@@ -238,12 +291,12 @@ async function openModal(id) {
   // Visual — use saved AI image if available, else CSS canvas
   const visualEl = document.getElementById('modal-visual');
   if (look.imgUrl) {
+    visualEl.style.position = 'relative';
     visualEl.innerHTML = `
       <img src="${look.imgUrl}" alt="${look.label}"
-        style="width:100%;height:100%;object-fit:cover;border-radius:18px;display:block"
-        onerror="this.parentElement.innerHTML=''">
+        style="width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:18px;display:block"
+        onerror="this.style.display='none'">
       <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);color:white;font-size:10px;font-weight:600;padding:3px 9px;border-radius:50px">✨ AI Generated</div>`;
-    visualEl.style.position = 'relative';
   } else {
     visualEl.innerHTML = buildOutfitCanvas(look, 'modal');
   }
@@ -328,15 +381,19 @@ document.getElementById('modal-delete-btn').addEventListener('click', async () =
     const res = await fetch(`${window.API_BASE_URL}/saved-looks/${activeId}`, {
       method: 'DELETE',
       credentials: 'include',
+      headers: window.getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Unable to delete look.');
     await res.json();
     looksCache = looksCache.filter(l => l.id !== activeId);
+    window.removeLocalLook(activeId);
     closeModal();
     renderGrid();
     showToast('Look deleted', 'error');
   } catch (err) {
     console.error('Failed to delete look:', err);
+    looksCache = looksCache.filter(l => l.id !== activeId);
+    window.removeLocalLook(activeId);
     showToast('Could not delete look. Please try again.', 'error');
   }
 });

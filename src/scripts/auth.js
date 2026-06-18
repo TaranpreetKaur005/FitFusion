@@ -2,9 +2,11 @@
    API CONFIG
    Use the Supabase-backed backend for authentication and storage.
 ══════════════════════════════ */
-const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-  ? `${location.protocol}//${location.hostname}:3002/api`
-  : '/api';
+const API = location.protocol === 'file:'
+  ? 'http://localhost:3002/api'
+  : (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? `${location.protocol}//${location.hostname}:3002/api`
+    : '/api';
 
 /* ─────────────────────────────────────────
    GOOGLE SIGN-IN
@@ -80,6 +82,12 @@ async function handleGoogleCredential(response) {
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.error || 'Google sign-in failed.', 'error'); return; }
+    window.authToken = data.token || null;
+    if (data.token) {
+      sessionStorage.setItem('ff_token', data.token);
+      localStorage.setItem('ff_token', data.token);
+      window.syncLocalWardrobeToServer?.();
+    }
     showToast(`Welcome, ${data.user.first_name} ✨`, 'success');
     setTimeout(() => { window.location.href = data.isNew ? 'outfit.html' : 'index.html'; }, 1000);
   } catch {
@@ -226,10 +234,16 @@ document.getElementById('login').addEventListener('submit', async e => {
     if (!res.ok) {
       showToast(data.error || 'Login failed.', 'error');
     } else {
+      window.authToken = data.token || null;
+      if (data.token) {
+        sessionStorage.setItem('ff_token', data.token);
+        localStorage.setItem('ff_token', data.token);
+        window.syncLocalWardrobeToServer?.();
+      }
       showToast(`Welcome back, ${data.user.first_name} ✨`, 'success');
       const returnUrl = sessionStorage.getItem('ff_return') || 'index.html';
       sessionStorage.removeItem('ff_return');
-      setTimeout(() => window.location.href = returnUrl, 1200);
+      setTimeout(() => window.location.href = returnUrl, 1201);
     }
   } catch {
     showToast('Cannot reach server. Is it running?', 'error');
@@ -279,6 +293,12 @@ document.getElementById('signup').addEventListener('submit', async e => {
     if (!res.ok) {
       showToast(data.error || 'Signup failed.', 'error');
     } else {
+      window.authToken = data.token || null;
+      if (data.token) {
+        sessionStorage.setItem('ff_token', data.token);
+        localStorage.setItem('ff_token', data.token);
+        window.syncLocalWardrobeToServer?.();
+      }
       showToast(`Welcome to FitFusion, ${data.user.first_name} ✨`, 'success');
       const returnUrl = sessionStorage.getItem('ff_return') || 'index.html';
       sessionStorage.removeItem('ff_return');

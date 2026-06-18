@@ -58,22 +58,26 @@ async function getUserFromToken(req) {
 
 function setSessionCookie(res, token) {
   const isProduction = process.env.NODE_ENV === 'production';
-  res.cookie('ff_session', token, {
+  const cookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
+    sameSite: 'none',
+    path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  };
+  if (isProduction) cookieOptions.secure = true;
+  res.cookie('ff_session', token, cookieOptions);
 }
 
 function clearSessionCookie(res) {
   const isProduction = process.env.NODE_ENV === 'production';
-  res.cookie('ff_session', '', {
+  const cookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
+    sameSite: 'none',
+    path: '/',
     maxAge: 0,
-  });
+  };
+  if (isProduction) cookieOptions.secure = true;
+  res.cookie('ff_session', '', cookieOptions);
 }
 
 async function requireAuth(req, res, next) {
@@ -124,7 +128,7 @@ app.post('/api/signup', async (req, res) => {
 
   const token = jwt.sign({ id: user.id, email }, SECRET, { expiresIn: '7d' });
   setSessionCookie(res, token);
-  res.status(201).json({ message: 'Account created successfully.', user });
+  res.status(201).json({ message: 'Account created successfully.', user, token });
 });
 
 /* POST /api/login */
@@ -150,7 +154,7 @@ app.post('/api/login', async (req, res) => {
 
   const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '7d' });
   setSessionCookie(res, token);
-  res.json({ message: 'Signed in successfully.', user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email } });
+  res.json({ message: 'Signed in successfully.', user: { id: user.id, first_name: user.first_name, last_name: user.last_name, email: user.email }, token });
 });
 
 /* POST /api/google */
@@ -213,7 +217,7 @@ app.post('/api/google', async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '7d' });
     setSessionCookie(res, token);
 
-    res.json({ message: isNew ? 'Account created.' : 'Signed in.', isNew, user });
+    res.json({ message: isNew ? 'Account created.' : 'Signed in.', isNew, user, token });
   } catch (err) {
     res.status(401).json({ error: 'Google sign-in failed. ' + err.message });
   }
@@ -227,6 +231,46 @@ app.get('/api/me', async (req, res) => {
 app.post('/api/logout', (_req, res) => {
   clearSessionCookie(res);
   res.json({ message: 'Signed out.' });
+});
+
+/* ══════════════════════════════
+   ADMIN — USER MANAGEMENT
+   GET  /api/admin/users        — list all users
+   DELETE /api/admin/users/:id  — delete a user
+   Both require the service-role key as header:
+   x-admin-key: <SUPABASE_SERVICE_ROLE_KEY>
+══════════════════════════════ */
+function requireAdminKey(req, res, next) {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(403).json({ error: 'Forbidden — invalid admin key.' });
+  }
+  next();
+}
+
+app.get('/api/admin/users', requireAdminKey, async (req, res) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, first_name, last_name, email, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ count: data.length, users: data });
+});
+
+app.delete('/api/admin/users/:id', requireAdminKey, async (req, res) => {
+  const { id } = req.params;
+
+  // Delete all related data first
+  await supabase.from('saved_looks').delete().eq('user_id', id);
+  await supabase.from('generated_outfit').delete().eq('user_id', id);
+  await supabase.from('outfit_prefs').delete().eq('user_id', id);
+
+  // Delete the user
+  const { error } = await supabase.from('users').delete().eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ message: 'User and all associated data deleted.', id });
 });
 
 app.post('/api/outfit', requireAuth, async (req, res) => {
@@ -321,6 +365,97 @@ app.delete('/api/saved-looks/:id', requireAuth, async (req, res) => {
   }
 
   res.json({ message: 'Deleted' });
+});
+
+app.get('/api/generated-outfits', requireAuth, async (req, res) => {
+  const user = req.user;
+  const { data, error } = await supabase
+    .from('generated_outfit')
+    .select('id, image_url, outfit_data, created_at, updated_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: 'Could not load generated outfits.', details: error });
+  }
+
+  res.json({ 
+    outfits: data.map(row => ({ 
+      ...row.outfit_data, 
+      id: row.id.toString(), 
+      imgUrl: row.image_url,
+      created_at: row.created_at, 
+      updated_at: row.updated_at,
+      source: 'generated'
+    })) 
+  });
+});
+
+/* ═════════════════════════════=
+   SAVE GENERATED OUTFIT IMAGE
+   Uploads image to Supabase storage and saves metadata
+══════════════════════════════ */
+app.post('/api/save-generated-outfit', async (req, res) => {
+  const { image, outfitData, userId } = req.body;
+  if (!image || !outfitData) return res.status(400).json({ error: 'Image and outfit data required.' });
+
+  try {
+    // Convert base64 to buffer
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+    const mimeType = image.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg';
+    
+    // Generate unique filename
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).slice(2, 10);
+    const filename = `outfit-${userId || 'guest'}-${timestamp}-${random}.${mimeType.split('/')[1]}`;
+    
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('generated-outfits')
+      .upload(filename, buffer, { contentType: mimeType, upsert: false });
+    
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      return res.status(500).json({ error: 'Could not upload image.' });
+    }
+    
+    // Get public URL
+    const { data: { publicUrl } } = supabase
+      .storage
+      .from('generated-outfits')
+      .getPublicUrl(filename);
+    
+    // Save to generated_outfit table if user is logged in
+    let recordId = null;
+    if (userId) {
+      const { data, error: dbError } = await supabase
+        .from('generated_outfit')
+        .insert({
+          user_id: userId,
+          image_url: publicUrl,
+          outfit_data: outfitData
+        })
+        .select('id')
+        .single();
+      
+      if (dbError) {
+        console.warn('Database insert error (non-fatal):', dbError);
+      } else {
+        recordId = data?.id;
+      }
+    }
+    
+    res.json({ 
+      imageUrl: publicUrl, 
+      recordId,
+      message: 'Generated outfit saved successfully.' 
+    });
+  } catch (err) {
+    console.error('Save generated outfit error:', err.message);
+    res.status(500).json({ error: 'Could not save generated outfit.' });
+  }
 });
 
 /* ═════════════════════════════=
